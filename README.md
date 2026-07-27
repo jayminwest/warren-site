@@ -45,7 +45,13 @@ Two gates deserve a note.
 
 ## Deployment
 
-Vercel builds and serves the site. The build command runs `sync:upstream` before `build`, because the generator writes the SDK reference at build time and this repo does not commit it.
+Vercel builds and serves the site. `vercel.json` sets the build command to `bun run sync:upstream && bun run build`.
+
+The sync step has to run first. The generator writes the SDK reference into `src/content/docs/docs/sdk/`, and `.gitignore` covers that directory. A build without the sync step publishes the site with `/docs/sdk/` missing.
+
+Every other derived output does live in git. The sync step rewrites those files to the same bytes. It fails the build only when the pinned ref has drifted.
+
+Vercel validates `vercel.json` against a strict schema and rejects any key it does not define. Comments do not belong in that file. Record deployment reasoning here instead.
 
 ## License
 
