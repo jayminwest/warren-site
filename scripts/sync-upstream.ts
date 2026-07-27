@@ -13,6 +13,8 @@
  *   - `src/content/docs/docs/<slug>.md` — one page per `UPSTREAM_DOCS` entry
  *   - `src/content/docs/docs/reference/cli.md` — from warren's commander CLI
  *   - `src/config/facts.generated.json` — the numbers the landing page cites
+ *   - `src/styles/warren-theme.css` — warren's design tokens, so the site and
+ *     the product cannot drift apart on color, type, radius, or elevation
  *
  * Everything that decides content is a pure function in `scripts/upstream/`
  * and is unit-tested without a checkout. This file is only the shell: clone,
@@ -111,6 +113,7 @@ function readSources(): UpstreamSources {
 		packageJson: readCheckoutFile(EXTRA_SOURCES.packageJson),
 		openapi: readCheckoutFile(EXTRA_SOURCES.openapi),
 		dockerfile: readCheckoutFile(EXTRA_SOURCES.dockerfile),
+		themeCss: readCheckoutFile(EXTRA_SOURCES.themeCss),
 	};
 }
 

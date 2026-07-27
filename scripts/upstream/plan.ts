@@ -26,6 +26,7 @@ import {
 	rewriteLinks,
 	stripLeadingH1,
 } from "./markdown.ts";
+import { renderThemeCss, TOKENS_OUT_PATH, TOKENS_SOURCE } from "./tokens.ts";
 
 /** Upstream path of the commander entry point the CLI reference derives from. */
 export const CLI_SOURCE = "src/cli/main.ts";
@@ -36,11 +37,13 @@ export const EXTRA_SOURCES = {
 	packageJson: "package.json",
 	openapi: "docs/openapi.yaml",
 	dockerfile: "Dockerfile",
+	themeCss: TOKENS_SOURCE,
 } as const;
 
 export const DOCS_OUT_DIR = "src/content/docs/docs";
 export const CLI_OUT_PATH = `${DOCS_OUT_DIR}/reference/cli.md`;
 export const FACTS_OUT_PATH = "src/config/facts.generated.json";
+export const THEME_OUT_PATH = TOKENS_OUT_PATH;
 
 /**
  * Substring every generated Markdown page carries. `--check` uses it to tell
@@ -56,6 +59,8 @@ export type UpstreamSources = {
 	readonly packageJson: string;
 	readonly openapi: string;
 	readonly dockerfile: string;
+	/** Raw text of warren's `src/ui/src/index.css`, source of the design tokens. */
+	readonly themeCss: string;
 };
 
 export type GeneratedFile = {
@@ -119,15 +124,17 @@ export function expectedOutputPaths(): string[] {
 		...UPSTREAM_DOCS.map((doc) => `${DOCS_OUT_DIR}/${doc.slug}.md`),
 		CLI_OUT_PATH,
 		FACTS_OUT_PATH,
+		THEME_OUT_PATH,
 	];
 }
 
 /**
  * Generate every derived file. Throws — loudly — rather than emitting an
  * empty or partial artifact: a missing upstream file means the manifest and
- * the pinned ref disagree, and a CLI parse that finds nothing means the
- * extractor's assumptions about `src/cli/main.ts` have expired. Both are
- * worse silently than as a failed build.
+ * the pinned ref disagree, a CLI parse that finds nothing means the
+ * extractor's assumptions about `src/cli/main.ts` have expired, and a token
+ * block that cannot be found means warren's stylesheet was restructured. All
+ * three are worse silently than as a failed build.
  */
 export function planOutputs(sources: UpstreamSources): GeneratedFile[] {
 	const slugBySource = new Map(UPSTREAM_DOCS.map((doc) => [doc.source, doc.slug] as const));
@@ -166,6 +173,14 @@ export function planOutputs(sources: UpstreamSources): GeneratedFile[] {
 				commands,
 			}),
 		),
+	});
+	files.push({
+		path: THEME_OUT_PATH,
+		content: renderThemeCss(sources.themeCss, {
+			ref: UPSTREAM.ref,
+			repoLabel: `${UPSTREAM.owner}/${UPSTREAM.repo}`,
+			sourcePath: EXTRA_SOURCES.themeCss,
+		}),
 	});
 	return files;
 }

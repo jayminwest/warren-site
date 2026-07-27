@@ -8,9 +8,9 @@ Astro and Starlight build the pages. The design tokens come from warren's own we
 
 The site never restates warren by hand. Every documentation page derives from the warren repository at one pinned ref, and `src/config/upstream.ts` holds that ref. Bumping `UPSTREAM.ref` publishes new documentation. Nothing else changes.
 
-`bun run sync:upstream` fetches warren at the pinned ref and writes the derived pages. `bun run gen:docs:check` runs the same generator and fails when the committed output drifts. That gate runs on every pull request.
+`bun run sync:upstream` fetches warren at the pinned ref and writes the derived output. `bun run gen:docs:check` runs the same generator and fails when the committed output drifts. That gate runs on every pull request.
 
-Five surfaces derive from warren:
+Six surfaces derive from warren:
 
 | Surface | Source |
 | --- | --- |
@@ -19,6 +19,7 @@ Five surfaces derive from warren:
 | `/docs/reference/cli` | a static parse of `src/cli/main.ts` |
 | Narrative docs | the files listed in `UPSTREAM_DOCS` |
 | `/changelog` | `CHANGELOG.md` |
+| `src/styles/warren-theme.css` | the token blocks in `src/ui/src/index.css` |
 
 Marketing copy lives in `content/` and belongs to this repo alone.
 
@@ -26,7 +27,7 @@ Marketing copy lives in `content/` and belongs to this repo alone.
 
 ```bash
 bun install
-bun run sync:upstream    # fetch warren at the pinned ref, write derived pages
+bun run sync:upstream    # fetch warren at the pinned ref, write derived output
 bun run dev              # local dev server
 bun run build            # static build into dist/
 bun run verify           # every quality gate, the agent-facing entry point

@@ -1,18 +1,20 @@
 /* biome-ignore-all format: vendored — declarations must stay as upstream wrote them */
 /*
- * VENDORED — DO NOT HAND-EDIT.
+ * GENERATED — DO NOT HAND-EDIT. Run `bun run sync:upstream`.
  *
  * Source: jayminwest/warren `src/ui/src/index.css` @ ref `v0.11.0`
  *         (the `@theme { … }` block starting at line 42, plus the
  *         `:root[data-theme="dark"]` override block that follows it).
  *
- * This file is the warren app's design-token set, copied verbatim so the
+ * This file is the warren app's design-token set, derived so the
  * marketing/docs site and the product render the same colors, fonts,
- * radii, and shadows. When warren's tokens change, re-copy this file from
- * the new ref and bump the ref comment above — never patch it by hand and
- * never add site-specific tokens here. Site-specific work (font faces,
- * Starlight variable mapping, page styling) belongs in
- * `starlight-overrides.css` and in component `<style>` blocks.
+ * radii, and shadows. To take new tokens, bump `UPSTREAM.ref` in
+ * `src/config/upstream.ts` and run `bun run sync:upstream`. The
+ * `gen:docs:check` gate fails when this file drifts from the pinned ref,
+ * so a hand-edit here does not survive CI. Never add site-specific tokens
+ * to this file. Site-specific work (font faces, Starlight variable
+ * mapping, page styling) belongs in `starlight-overrides.css` and in
+ * component `<style>` blocks.
  *
  * ONE mechanical transform is applied on copy, because this site has no
  * Tailwind: the wrapper `@theme {` becomes `:root {`. Tailwind's `@theme`

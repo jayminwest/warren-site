@@ -23,6 +23,7 @@ import {
 	FACTS_OUT_PATH,
 	generatedBanner,
 	planOutputs,
+	THEME_OUT_PATH,
 	type UpstreamSources,
 } from "./upstream/plan.ts";
 
@@ -49,6 +50,20 @@ const LEAF: CliCommand = {
 const PACKAGE_JSON = '{ "name": "warren", "version": "1.2.3" }';
 const OPENAPI = "openapi: 3.1.0\npaths:\n  /runs: {}\n  /runs/{id}: {}\n";
 const DOCKERFILE = "RUN npm i -g \\\n    @os-eco/burrow-cli@0.3.15 \\\n    other\n";
+
+/** The two blocks `scripts/upstream/tokens.ts` lifts; that module has its own suite. */
+const THEME_CSS = [
+	'@import "tailwindcss";',
+	"",
+	"@theme {",
+	"\t--color-bg: oklch(99% 0.003 264);",
+	"}",
+	"",
+	':root[data-theme="dark"] {',
+	"\t--color-bg: oklch(14% 0.008 264);",
+	"}",
+	"",
+].join("\n");
 
 describe("facts", () => {
 	test("reads the package version", () => {
@@ -102,6 +117,7 @@ function sourcesFor(docs: ReadonlyMap<string, string>): UpstreamSources {
 		packageJson: PACKAGE_JSON,
 		openapi: OPENAPI,
 		dockerfile: DOCKERFILE,
+		themeCss: THEME_CSS,
 	};
 }
 
@@ -119,9 +135,9 @@ describe("planOutputs", () => {
 	const files = planOutputs(sourcesFor(fullDocs()));
 	const byPath = new Map(files.map((file) => [file.path, file.content]));
 
-	test("writes one page per manifest entry plus the CLI reference and the facts", () => {
+	test("writes one page per manifest entry plus the CLI reference, facts, and tokens", () => {
 		expect(files.map((file) => file.path)).toEqual(expectedOutputPaths());
-		expect(files).toHaveLength(UPSTREAM_DOCS.length + 2);
+		expect(files).toHaveLength(UPSTREAM_DOCS.length + 3);
 	});
 
 	test("gives every page a banner and an upstream editUrl", () => {
@@ -137,6 +153,19 @@ describe("planOutputs", () => {
 	test("renders the CLI reference and the facts file", () => {
 		expect(byPath.get(CLI_OUT_PATH)).toContain("## `warren plan`");
 		expect(byPath.get(FACTS_OUT_PATH)).toContain(`"ref": "${UPSTREAM.ref}"`);
+	});
+
+	test("renders the token stylesheet from warren's index.css at the pinned ref", () => {
+		const css = byPath.get(THEME_OUT_PATH) ?? "";
+		expect(css).toContain(`@ ref \`${UPSTREAM.ref}\``);
+		expect(css).toContain(":root {\n\t--color-bg: oklch(99% 0.003 264);\n}");
+		// The header names `@theme` in prose; only the RULE must be gone.
+		expect(css).not.toContain("\n@theme {");
+	});
+
+	test("fails when warren's stylesheet no longer holds a token block", () => {
+		const sources = { ...sourcesFor(fullDocs()), themeCss: "body { color: red; }\n" };
+		expect(() => planOutputs(sources)).toThrow(/has been restructured/);
 	});
 
 	test("is deterministic across runs", () => {

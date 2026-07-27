@@ -8,7 +8,7 @@ Prose paragraphs here stay on one line. The prose guard splits sentences per lin
 
 This repository builds warren.run: the marketing site and the documentation for [warren](https://github.com/jayminwest/warren). The stack is Astro with the Starlight theme, and every page ships as static HTML.
 
-The site copies nothing from warren by hand. One pinned upstream ref in `src/config/upstream.ts` names the release tag that every derived page comes from. A sync script pulls the API reference, the CLI reference, the SDK reference, the narrative docs, and the changelog at that ref. To publish new docs, bump the ref and run the sync.
+The site copies nothing from warren by hand. One pinned upstream ref in `src/config/upstream.ts` names the release tag that every derived page comes from. A sync script pulls the API reference, the CLI reference, the SDK reference, the narrative docs, the changelog, and the design tokens at that ref. To publish new docs, bump the ref and run the sync.
 
 ## Tech stack at a glance
 
@@ -27,7 +27,7 @@ bun run dev                   # local dev server
 bun run build                 # production build
 bun run preview               # serve the production build
 bun test                      # run all tests
-bun run sync:upstream         # refresh the derived docs from the pinned ref
+bun run sync:upstream         # refresh the derived output from the pinned ref
 ```
 
 ## Quality gates
