@@ -53,6 +53,16 @@ Every other derived output does live in git. The sync step rewrites those files 
 
 Vercel validates `vercel.json` against a strict schema and rejects any key it does not define. Comments do not belong in that file. Record deployment reasoning here instead.
 
+### Why the build script sets `BASE_URL`
+
+The `build` script reads `BASE_URL=/ astro build`. That prefix is load-bearing. Do not drop it.
+
+`starlight-links-validator` reads `import.meta.env.BASE_URL` inside its `astro:build:done` hook. Astro integration code runs in the host runtime rather than through Vite, so the value depends on which runtime starts `astro build`. Node gets the value from Vite and works. Bun maps `import.meta.env` onto `process.env`, where the name is absent, and the plugin crashes on an undefined path.
+
+Vercel starts the build under Bun. A local `bun run build` starts it under Node through the `astro` shebang. The same command therefore passed locally and failed on Vercel until the script set the name. Reproduce the failure with `bun --bun run build`.
+
+The site sets no `base` in `astro.config.mjs`, so `/` is the correct value. Vite ignores the environment variable for modules it compiles, which leaves one value on both paths.
+
 ## License
 
 MIT.

@@ -11,7 +11,7 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "astro dev",
-		"build": "astro build",
+		"build": "BASE_URL=/ astro build",
 		"preview": "astro preview",
 		"sync:upstream": "bun run scripts/sync-upstream.ts",
 		"test": "bun test",
