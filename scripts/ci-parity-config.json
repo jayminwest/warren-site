@@ -3,6 +3,7 @@
 	"aliases": {
 		"check:coverage:ci": "check:coverage"
 	},
-	"ciOnly": ["report:test-timing", "report:quality-metrics"],
+	"$comment_build": "CIONLY / `build`. The 'Build under the Bun runtime' step exists to catch a runtime divergence CI cannot otherwise see. `bun run build` resolves the astro bin through its shebang and executes under Node; Vercel executes the same command under Bun, where `import.meta.env` is backed by process.env rather than supplied by Vite. starlight-links-validator reads import.meta.env.BASE_URL in its astro:build:done hook, so the two runtimes disagreed and a fully green CI run still produced a red deploy. `build` is not a gate and must not become one — check:bundle-size already builds and measures under Node, and duplicating that as a manifest gate would double the slowest step for every developer running `bun run verify`. This entry is the deploy path being covered by CI instead of by Vercel finding out.",
+	"ciOnly": ["report:test-timing", "report:quality-metrics", "build"],
 	"localOnly": []
 }

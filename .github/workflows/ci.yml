@@ -38,6 +38,17 @@ jobs:
       # Conditional gate: the derived docs must match the pinned upstream ref.
       - run: bun run gen:docs:check
 
+      # Deploy-path parity, NOT a gate — allowlisted as ciOnly in
+      # scripts/ci-parity-config.json. Every other build in this workflow runs
+      # under Node, because the `astro` shebang wins when bun spawns the bin.
+      # Vercel starts the build under Bun instead, where `import.meta.env` is
+      # backed by process.env and Astro integrations see different values. That
+      # divergence already shipped one red deploy from an all-green CI run, so
+      # the runtime Vercel actually uses gets exercised here. Runs after
+      # gen:docs:check so .upstream/ is present and TypeDoc has its input.
+      - name: Build under the Bun runtime (Vercel deploy parity)
+        run: bun --bun run build
+
       # Same gate as `check:coverage`, with the JUnit reporter added so the
       # timing summary below has an input. Aliased in ci-parity-config.json.
       - name: Tests + coverage ratchet (JUnit reporter)
