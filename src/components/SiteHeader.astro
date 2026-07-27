@@ -1,0 +1,95 @@
+---
+/** Navigation for the standalone pages. Links only — no client JS. */
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+
+const links = [
+	{ href: "/docs/quickstart/", label: "Docs" },
+	{ href: "/docs/api/", label: "API" },
+	{ href: "/changelog/", label: "Changelog" },
+	{ href: "https://github.com/jayminwest/warren", label: "GitHub", external: true },
+];
+---
+
+<header class="site-header">
+	<div class="shell bar">
+		<a class="brand" href="/">
+			<Image src={logo} alt="Warren" width={132} densities={[1, 2]} loading="eager" />
+		</a>
+		<nav aria-label="Main">
+			<ul>
+				{
+					links.map((link) => (
+						<li>
+							<a
+								href={link.href}
+								rel={link.external ? "noopener noreferrer" : undefined}
+							>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: var(--z-sticky);
+		background-color: color-mix(in oklab, var(--color-bg) 88%, transparent);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		min-height: 3.5rem;
+	}
+
+	.brand {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.brand img {
+		height: 1.5rem;
+		width: auto;
+	}
+
+	nav ul {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	nav a {
+		color: var(--color-muted-foreground);
+		font-size: 0.9375rem;
+		text-decoration: none;
+	}
+
+	nav a:hover {
+		color: var(--color-fg);
+	}
+
+	@media (max-width: 34rem) {
+		.bar {
+			flex-wrap: wrap;
+			padding-block: 0.75rem;
+		}
+
+		nav ul {
+			gap: 1rem;
+		}
+	}
+</style>

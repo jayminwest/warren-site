@@ -1,0 +1,381 @@
+---
+/**
+ * Landing page.
+ *
+ * LAYOUT ONLY — no copy lives in this file. Every headline, label, and
+ * paragraph comes from `content/*.md`, which the prose guard
+ * (`bun run check:prose`) lints at zero violations. Structured bits
+ * (eyebrows, headings, CTA label + href) come from each file's
+ * frontmatter; prose comes from the markdown body, rendered through the
+ * `Content` component so the guard sees it as prose.
+ *
+ * To change a word on this page, edit the markdown, not this file.
+ *
+ * Constraints this page must keep: zero client JavaScript, and no color,
+ * font, radius, or shadow that is not a vendored warren token.
+ */
+import { Content as ClosingBody, frontmatter as closingMeta } from "../../content/closing.md";
+import { Content as AgentsBody, frontmatter as agentsMeta } from "../../content/features/agents.md";
+import { Content as OptInBody, frontmatter as optInMeta } from "../../content/features/opt-in.md";
+import { Content as RepairBody, frontmatter as repairMeta } from "../../content/features/repair.md";
+import {
+	Content as SandboxBody,
+	frontmatter as sandboxMeta,
+} from "../../content/features/sandbox.md";
+import {
+	Content as ScheduleBody,
+	frontmatter as scheduleMeta,
+} from "../../content/features/schedule.md";
+import { Content as SteerBody, frontmatter as steerMeta } from "../../content/features/steer.md";
+import { Content as HeroBody, frontmatter as heroMeta } from "../../content/hero.md";
+import {
+	Content as HowItWorksBody,
+	frontmatter as howItWorksMeta,
+} from "../../content/how-it-works.md";
+import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
+import BaseLayout from "../components/BaseLayout.astro";
+import FeatureCard from "../components/FeatureCard.astro";
+import TerminalSample, { type TerminalLine } from "../components/TerminalSample.astro";
+import facts from "../config/facts.generated.json";
+
+/** A call to action, as authored in a content file's frontmatter. */
+interface Cta {
+	label: string;
+	href: string;
+}
+
+const hero = heroMeta as {
+	eyebrow: string;
+	headline: string;
+	title: string;
+	description: string;
+	primaryCta: Cta;
+	secondaryCta: Cta;
+};
+const howItWorks = howItWorksMeta as { eyebrow: string; heading: string };
+const selfHost = selfHostMeta as { eyebrow: string; heading: string; cta: Cta };
+const closing = closingMeta as { heading: string; cta: Cta };
+
+/** Feature cards, in the order `order` gives them in their frontmatter. */
+const features = [
+	{ meta: agentsMeta, Body: AgentsBody },
+	{ meta: sandboxMeta, Body: SandboxBody },
+	{ meta: steerMeta, Body: SteerBody },
+	{ meta: scheduleMeta, Body: ScheduleBody },
+	{ meta: repairMeta, Body: RepairBody },
+	{ meta: optInMeta, Body: OptInBody },
+]
+	.map((entry) => ({
+		...entry,
+		meta: entry.meta as { order: number; eyebrow: string; title: string },
+	}))
+	.sort((a, b) => a.meta.order - b.meta.order);
+
+/**
+ * A transcript, not a claim: the two commands are from warren's own
+ * quickstart and `warren run` tails run events as NDJSON, so the output
+ * lines use real event kinds (`state_change`, `tool_use`) and the
+ * default `burrow/<run-id>` branch prefix. No timings, no test counts.
+ */
+/**
+ * Numbers on this page come from `src/config/facts.generated.json`, which
+ * `bun run sync:upstream` extracts mechanically from warren at the pinned
+ * ref. Never hand-type one of these into the copy — it would drift the
+ * moment the ref moves.
+ */
+const stats = [
+	{ label: "Current release", value: facts.version },
+	{ label: "HTTP API paths", value: String(facts.httpPathCount) },
+	{ label: "CLI commands", value: String(facts.cliCommandCount) },
+];
+
+const terminal = {
+	title: "warren — dispatch a run",
+	lines: [
+		{ kind: "prompt", text: "warren add-project https://github.com/acme/checkout" },
+		{ kind: "muted", text: "cloned to /data/projects/acme/checkout" },
+		{ kind: "prompt", text: 'warren run claude-code checkout -p "fix the flaky auth test"' },
+		{ kind: "out", text: '{"kind":"state_change","payload":{"state":"running"}}' },
+		{ kind: "out", text: '{"kind":"tool_use","payload":{"name":"Read","path":"auth/session.test.ts"}}' },
+		{ kind: "out", text: '{"kind":"tool_use","payload":{"name":"Edit","path":"auth/session.ts"}}' },
+		{ kind: "ok", text: '{"kind":"state_change","payload":{"state":"succeeded"}}' },
+		{ kind: "muted", text: "pushed burrow/run_9f31c47a20b6 · pull request opened" },
+	] satisfies readonly TerminalLine[],
+};
+---
+
+<BaseLayout title={hero.title} description={hero.description}>
+	<section class="hero">
+		<div class="shell">
+			<p class="eyebrow">{hero.eyebrow}</p>
+			<h1>{hero.headline}</h1>
+			<div class="lede"><HeroBody /></div>
+			<div class="ctas">
+				<a class="cta primary" href={hero.primaryCta.href}>{hero.primaryCta.label}</a>
+				<a
+					class="cta secondary"
+					href={hero.secondaryCta.href}
+					rel="noopener noreferrer"
+				>
+					{hero.secondaryCta.label}
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="shell sample">
+		<TerminalSample title={terminal.title} lines={terminal.lines} />
+		<dl class="stats">
+			{
+				stats.map((stat) => (
+					<div>
+						<dt>{stat.label}</dt>
+						<dd>{stat.value}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</section>
+
+	<section class="shell steps" aria-labelledby="how-it-works">
+		<p class="eyebrow">{howItWorks.eyebrow}</p>
+		<h2 id="how-it-works">{howItWorks.heading}</h2>
+		<div class="steps-body"><HowItWorksBody /></div>
+	</section>
+
+	<section class="shell block" aria-labelledby="features">
+		<h2 id="features">What warren gives you</h2>
+		<div class="features">
+			{
+				features.map(({ meta, Body }) => (
+					<FeatureCard eyebrow={meta.eyebrow} title={meta.title}>
+						<Body />
+					</FeatureCard>
+				))
+			}
+		</div>
+	</section>
+
+	<section class="shell block" aria-labelledby="self-host">
+		<p class="eyebrow">{selfHost.eyebrow}</p>
+		<h2 id="self-host">{selfHost.heading}</h2>
+		<div class="prose"><SelfHostBody /></div>
+		<a class="cta secondary" href={selfHost.cta.href}>{selfHost.cta.label}</a>
+	</section>
+
+	<section class="shell closing" aria-labelledby="closing">
+		<h2 id="closing">{closing.heading}</h2>
+		<div class="prose"><ClosingBody /></div>
+		<a class="cta primary" href={closing.cta.href}>{closing.cta.label}</a>
+	</section>
+</BaseLayout>
+
+<style>
+	.hero {
+		padding-block: 5rem 3.5rem;
+		border-bottom: 1px solid var(--color-border);
+		background:
+			radial-gradient(
+				60rem 24rem at 50% -8rem,
+				color-mix(in oklab, var(--color-primary) 14%, transparent),
+				transparent 70%
+			),
+			var(--color-bg);
+	}
+
+	.eyebrow {
+		margin: 0 0 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-primary);
+	}
+
+	h1 {
+		margin: 0;
+		max-width: 20ch;
+		font-size: clamp(2.25rem, 6vw, 3.5rem);
+		font-weight: 650;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		margin-top: 1.25rem;
+		max-width: 60ch;
+		color: var(--color-muted-foreground);
+	}
+
+	.lede :global(p) {
+		margin: 0 0 0.75rem;
+		font-size: 1.125rem;
+	}
+
+	.lede :global(p:last-child) {
+		margin-bottom: 0;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		color: var(--color-fg);
+	}
+
+	.ctas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 2rem;
+	}
+
+	.cta {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.625rem 1.25rem;
+		border: 1px solid transparent;
+		border-radius: var(--radius-md);
+		font-size: 0.9375rem;
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.cta.primary {
+		background-color: var(--color-primary);
+		color: var(--color-primary-foreground);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.cta.primary:hover {
+		background-color: color-mix(in oklab, var(--color-primary) 88%, var(--color-fg));
+	}
+
+	.cta.secondary {
+		border-color: var(--color-border);
+		background-color: var(--color-card);
+		color: var(--color-fg);
+	}
+
+	.cta.secondary:hover {
+		border-color: var(--color-primary);
+	}
+
+	.sample {
+		padding-block: 3rem 0;
+	}
+
+	.stats {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: 1rem;
+		margin: 1.5rem 0 0;
+	}
+
+	.stats dt {
+		font-size: 0.8125rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.stats dd {
+		margin: 0.125rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 1.5rem;
+		font-weight: 500;
+		color: var(--color-primary);
+	}
+
+	.block,
+	.steps {
+		padding-block: 4rem 0;
+	}
+
+	h2 {
+		margin: 0 0 1.5rem;
+		font-size: clamp(1.5rem, 3.5vw, 2rem);
+		font-weight: 650;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+	}
+
+	.steps .eyebrow,
+	.block .eyebrow {
+		margin-bottom: 0.5rem;
+	}
+
+	.steps-body :global(ol) {
+		display: grid;
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		max-width: 60ch;
+		list-style: none;
+		counter-reset: step;
+	}
+
+	.steps-body :global(li) {
+		position: relative;
+		padding-left: 2.5rem;
+		color: var(--color-muted-foreground);
+		counter-increment: step;
+	}
+
+	.steps-body :global(li)::before {
+		content: counter(step);
+		position: absolute;
+		left: 0;
+		top: 0.125rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 50%;
+		background-color: var(--color-muted);
+		border: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-primary);
+	}
+
+	.steps-body :global(strong) {
+		color: var(--color-fg);
+		font-weight: 600;
+	}
+
+	.features {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		gap: 1rem;
+	}
+
+	.prose {
+		max-width: 60ch;
+		color: var(--color-muted-foreground);
+	}
+
+	.prose :global(p) {
+		margin: 0 0 1rem;
+	}
+
+	.prose :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		color: var(--color-fg);
+		overflow-wrap: anywhere;
+	}
+
+	.block .cta {
+		margin-top: 0.5rem;
+	}
+
+	.closing {
+		padding-block: 4rem 0;
+		text-align: center;
+	}
+
+	.closing h2 {
+		max-width: 22ch;
+		margin-inline: auto;
+	}
+
+	.closing .prose {
+		margin: 0 auto 2rem;
+	}
+</style>

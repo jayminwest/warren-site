@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Astro build output + cache
+dist/
+.astro/
+
+# Upstream warren checkout (fetched at build from a pinned ref)
+.upstream/
+
+# SDK reference, written into the docs collection by starlight-typedoc on
+# every build that finds .upstream/
+src/content/docs/docs/sdk/
+
+# Vercel
+.vercel/
+
+# Test / coverage artifacts
+coverage/
+test-results/
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store

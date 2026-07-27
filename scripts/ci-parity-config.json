@@ -1,0 +1,8 @@
+{
+	"$comment": "Escape hatches for scripts/check-ci-parity.ts. The parity gate holds in both directions by default; every entry below is a deliberate exception and carries its reason. Keep this file as short as possible — an entry here is a place where CI and `bun run check:all` disagree. ALIASES. `check:coverage:ci` is the SAME gate as `check:coverage` (both run scripts/check-coverage.ts against budgets/coverage-budgets.json); it only adds `--junit` so the run emits test-results/junit.xml for the timing summary and the artifact upload. CI runs the `:ci` variant so it gets that file; a developer running the gate locally has no use for it. CIONLY. `report:test-timing` and `report:quality-metrics` are passive reporters, not gates: they parse junit.xml, coverage/lcov.info, and the budget JSON files and append a panel to $GITHUB_STEP_SUMMARY. They enforce nothing (the underlying ratchets already fail the build), they write to a GitHub-only output stream, and they run with `if: always()` so a failing gate still produces a summary. There is nothing for `check:all` to run. LOCALONLY. Empty, and it should stay empty. Every gate in the manifest runs in CI. A gate parked here is a gate CI is not enforcing.",
+	"aliases": {
+		"check:coverage:ci": "check:coverage"
+	},
+	"ciOnly": ["report:test-timing", "report:quality-metrics"],
+	"localOnly": []
+}

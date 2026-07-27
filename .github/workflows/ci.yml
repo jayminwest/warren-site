@@ -1,0 +1,71 @@
+name: CI
+
+# Runs the same gates as `bun run check:all`, one step per gate, in the
+# canonical manifest order (scripts/check-all.ts CANONICAL_GATES). The
+# `check:ci-parity` gate proves both directions of that claim: no step here
+# invokes a script the manifest cannot reach, and no manifest gate is absent
+# from this file. Justified divergences live in scripts/ci-parity-config.json.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      # --- manifest gates, in check:all order ---------------------------
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run check:agents
+      - run: bun run check:dups
+      - run: bun run check:deps
+      - run: bun run check:size
+      - run: bun run check:debt
+
+      # Conditional gate: builds the site, measures the bundle against
+      # budgets/bundle-size, then sweeps the built output for a11y defects.
+      - run: bun run check:bundle-size
+
+      # Conditional gate: the derived docs must match the pinned upstream ref.
+      - run: bun run gen:docs:check
+
+      # Same gate as `check:coverage`, with the JUnit reporter added so the
+      # timing summary below has an input. Aliased in ci-parity-config.json.
+      - name: Tests + coverage ratchet (JUnit reporter)
+        run: bun run check:coverage:ci
+
+      - run: bun run check:ci-parity
+
+      # --- CI-only reporters (allowlisted in ci-parity-config.json) ------
+      - name: Test timing summary
+        if: always()
+        run: bun run report:test-timing
+
+      - name: Code-quality metrics summary
+        if: always()
+        run: bun run report:quality-metrics
+
+      - name: Upload test timing artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bun-test-junit
+          path: test-results/junit.xml
+          if-no-files-found: warn
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bun-test-coverage
+          path: coverage/lcov.info
+          if-no-files-found: warn

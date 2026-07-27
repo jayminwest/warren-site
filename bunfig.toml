@@ -1,0 +1,63 @@
+# Bun runtime configuration for warren-site.
+# See https://bun.sh/docs/runtime/bunfig for available options.
+#
+# No [test] `root` is set on purpose. Tests live in two trees — `scripts/`
+# (the quality gates) and `src/lib/` (site logic) — so `bun test` uses its
+# default recursive discovery from the repo root. Pinning `root = "src"` (the
+# l5-toolkit default) would silently hide every gate test under `scripts/`.
+
+[test]
+# Coverage measures LOGIC only: `scripts/` and `src/lib/`.
+#
+# Everything below is presentational Astro output — components, layouts,
+# pages, styles, and the content collection — plus the generated upstream
+# checkout. Unit tests cannot say anything useful about a template that
+# renders markup, so those files are covered by two different gates instead:
+# `check:bundle-size` (which also runs the a11y sweep) and Starlight's link
+# validator. Excluding them keeps the floors in
+# `budgets/coverage-budgets.json` biting on code that has branches.
+#
+# A NEW directory under `src/` that holds logic belongs in `src/lib/`. A new
+# presentational directory must be added to this list, with a reason.
+#
+# The second group is VENDORED code, not site code. Those eight scripts are
+# copied byte-identically out of `templates/l5-toolkit/scripts/` in the os-eco
+# root; this repo is a consumer of them, not their owner. They are authored and
+# tested in the template repo, they may not be edited here (two of them are
+# asserted byte-identical by `cmp`), and their uncovered halves are `main()`
+# plus argv parsing — the exact code a consumer cannot test without shelling
+# out. Measuring them here reports the TEMPLATE's coverage under warren-site's
+# name and drags the floor away from the code this repo can actually act on.
+# Their `.test.ts` files stay and still run; only the coverage accounting is
+# scoped out. What remains measured is site-authored logic: the upstream
+# content pipeline (`sync-upstream.ts`, `upstream/**`), the a11y and
+# bundle-size guards, and the prose guard.
+#
+# When a vendored script is un-vendored — genuinely forked for this repo — its
+# line comes OUT of this list and it starts answering to the floor.
+coveragePathIgnorePatterns = [
+  "**/*.astro",
+  "**/*.test.ts",
+  "src/assets/**",
+  "src/components/**",
+  "src/config/**",
+  "src/content/**",
+  "src/layouts/**",
+  "src/pages/**",
+  "src/styles/**",
+  "src/env.d.ts",
+  ".upstream/**",
+  ".astro/**",
+  "dist/**",
+  "scripts/hooks/**",
+
+  # Vendored from templates/l5-toolkit/scripts/ — see the note above.
+  "scripts/check-all.ts",
+  "scripts/check-ci-parity.ts",
+  "scripts/check-coverage.ts",
+  "scripts/check-debt-markers.ts",
+  "scripts/check-file-sizes.ts",
+  "scripts/validate-agents-md.ts",
+  "scripts/report-test-timing.ts",
+  "scripts/report-quality-metrics.ts",
+]

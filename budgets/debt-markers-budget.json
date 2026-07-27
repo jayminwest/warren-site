@@ -1,0 +1,10 @@
+{
+	"_comment": "Debt-marker scanner config used by scripts/check-debt-markers.ts. A TODO/FIXME/HACK/XXX line passes only when a tracker reference sits on the same line and matches one of `trackerPatterns` (JavaScript regex sources, matched case-insensitively). `allowlist` is EMPTY and stays that way: this repo started clean, so the effective threshold is 0 untracked markers and nothing is grandfathered. Pair a new marker with a tracker id or delete it. The ratchet only goes DOWN; the script never auto-edits this file.",
+	"_prefixes": "`site` covers this repo's own tracker ids. The remaining prefixes let a marker point at the upstream repo whose content this site renders — a docs bug is usually a warren bug.",
+	"trackerPatterns": [
+		"\\b(?:site|warren|pl|mx|burrow|canopy|seeds|mulch|sapling|trellis|plot)-[0-9a-f]+\\b",
+		"#\\d+\\b",
+		"https?://\\S+"
+	],
+	"allowlist": []
+}

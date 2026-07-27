@@ -1,0 +1,65 @@
+---
+/**
+ * One feature block on the landing page.
+ *
+ * The eyebrow and the title come from a `content/features/*.md`
+ * frontmatter block; the body is that file's markdown, passed in as the
+ * default slot so the prose guard lints it. Nothing here holds copy.
+ */
+interface Props {
+	/** Short label above the title, e.g. "Sandbox". */
+	eyebrow: string;
+	title: string;
+}
+
+const { eyebrow, title } = Astro.props;
+---
+
+<article class="card">
+	<p class="eyebrow">{eyebrow}</p>
+	<h3>{title}</h3>
+	<div class="body"><slot /></div>
+</article>
+
+<style>
+	.card {
+		padding: 1.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-xl);
+		background-color: var(--color-card);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.eyebrow {
+		margin: 0 0 0.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-primary);
+	}
+
+	h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1.125rem;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.body {
+		color: var(--color-muted-foreground);
+		font-size: 0.9375rem;
+	}
+
+	.body :global(p) {
+		margin: 0;
+	}
+
+	.body :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		color: var(--color-fg);
+		overflow-wrap: anywhere;
+	}
+</style>

@@ -1,0 +1,16 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "astro/tsconfigs/strict",
+	"compilerOptions": {
+		"noUncheckedIndexedAccess": true,
+		"noImplicitAny": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"types": ["astro/client", "bun"]
+	},
+	"include": [".astro/types.d.ts", "**/*.ts", "**/*.astro"],
+	"exclude": ["node_modules", "dist", ".upstream", "coverage", "test-results"]
+}

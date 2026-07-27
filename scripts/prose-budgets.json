@@ -1,0 +1,9 @@
+{
+	"_comment": "Prose guard budgets — ASD-STE100 mechanical subset (see scripts/check-prose.ts). This repo starts clean: threshold 0 with an empty `budgets` object, so every tracked file must reach zero counted violations. Nothing is grandfathered. To add a file, list it in `files` and clean the prose; do NOT add a `budgets` entry to buy an exemption.",
+	"_marketing": "warren.run is a marketing site, and the marketing-adjective rule is the reason this gate matters here. Words such as seamless, powerful, turnkey, blazing, unleash, and empower stay banned. Describe what warren does and let the reader judge it.",
+	"_globs": "`files` accepts glob patterns as well as literal paths. An entry that matches nothing is skipped without an error, so `content/**/*.md` is safe to list before any content lands.",
+	"threshold": 0,
+	"sentenceWordCap": 25,
+	"files": ["README.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "content/**/*.md"],
+	"budgets": {}
+}

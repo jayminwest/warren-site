@@ -1,0 +1,35 @@
+{
+	"$comment": "Bundle-size ratchet for dist/, enforced by scripts/check-bundle-size.ts (the first half of the check:bundle-size gate; the second half is scripts/check-a11y.ts). All sizes in bytes. The ratchet only goes DOWN. NEVER hand-edit these numbers, and in particular never copy them from Astro's build log: gzip here is Node zlib at its default level 6, which runs measurably HOTTER than a bundler's own reporter. warren's scripts/bundle-size-budgets.json carries two separate CI post-mortems from that exact mistake. Re-baseline with `bun run scripts/check-bundle-size.ts --build --update`, which measures with the same gzip the guard enforces, so a budget it writes always passes.",
+	"$comment_scope": "totals/largest cover EVERY .js and .css file under dist/ — both the hashed `_astro/` assets and the `pagefind/` search client. Pagefind's js/css set is fixed by the pagefind version (its content-dependent output is .pf_fragment / .pf_meta / .pagefind, none of which are counted), so including it means a search-integration version bump shows up here instead of shipping unnoticed.",
+	"$comment_routes": "routes/routeDefault are the per-page JS ratchet: `scripts` counts <script> elements on the built page, `raw` sums the bytes those scripts pull (referenced asset size for external src, body length for inline). index.html and changelog/index.html are pinned at ZERO because astro.config.mjs sets `prefetch: false` precisely so the standalone pages ship no client JS at all — no prefetch runtime, no hydration island, nothing. That property is invisible to every other gate, so it is pinned here, and a zero budget is LOCKED: `--update` will not raise it off zero at any size without WARREN_SITE_BUNDLE_SIZE_ALLOW_RAISE=1. Starlight's docs routes legitimately ship a search client, a theme toggle and a ToC observer, so they answer to the much looser routeDefault; folding both into one budget would mean adopting the loose number everywhere and losing the zero-JS guarantee.",
+	"totals": {
+		"raw": {
+			"js": 544453,
+			"css": 181684
+		},
+		"gzip": {
+			"js": 140111,
+			"css": 34535
+		}
+	},
+	"largest": {
+		"gzip": {
+			"js": 39848,
+			"css": 11859
+		}
+	},
+	"routes": {
+		"changelog/index.html": {
+			"scripts": 0,
+			"raw": 0
+		},
+		"index.html": {
+			"scripts": 0,
+			"raw": 0
+		}
+	},
+	"routeDefault": {
+		"scripts": 18,
+		"raw": 13498
+	}
+}

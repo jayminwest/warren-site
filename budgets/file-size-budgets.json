@@ -1,0 +1,5 @@
+{
+	"_comment": "Per-file line-count budgets enforced by scripts/check-file-sizes.ts. Every `.ts`/`.tsx` file under `src/` and `scripts/` must be at or below `threshold` lines. `budgets` is EMPTY and stays that way: this repo started clean, so nothing is grandfathered. An entry here is a permanent record that a file was allowed to be too big — split the file instead. The ratchet only goes DOWN; the script never auto-edits this file.",
+	"threshold": 500,
+	"budgets": {}
+}

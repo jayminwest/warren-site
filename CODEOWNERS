@@ -1,0 +1,19 @@
+# Code owners for warren-site.
+#
+# GitHub requests a review from the owner of every path a pull request
+# touches. One maintainer owns the whole repository today; the specific
+# rules below exist so that ownership of the quality surface stays explicit
+# if that changes.
+
+*                       @jayminwest
+
+# Quality gates, budgets, and CI. A change here changes what the repository
+# will accept, so it needs the same review as production content.
+/scripts/               @jayminwest
+/budgets/               @jayminwest
+/.github/               @jayminwest
+/biome.json             @jayminwest
+/knip.json              @jayminwest
+/.jscpd.json            @jayminwest
+/bunfig.toml            @jayminwest
+/CODEOWNERS             @jayminwest

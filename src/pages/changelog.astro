@@ -1,0 +1,142 @@
+---
+/**
+ * `/changelog` — warren's CHANGELOG.md, rendered from the upstream
+ * checkout at build time.
+ *
+ * SHELL. The plumbing is real: if `.upstream/CHANGELOG.md` exists (it is
+ * written by `bun run sync:upstream`, see `src/config/upstream.ts`) this
+ * page renders it as HTML. When the checkout is absent — a fresh clone,
+ * or a build that skipped the sync — the page degrades to a short notice
+ * plus a link to the changelog on GitHub, rather than failing the build.
+ *
+ * The changelog is deliberately NOT read over the network at build time:
+ * every derived surface on this site comes from the pinned checkout so a
+ * build is reproducible offline.
+ */
+import { createMarkdownProcessor } from "@astrojs/markdown-remark";
+
+import BaseLayout from "../components/BaseLayout.astro";
+import { BLOB_BASE, UPSTREAM } from "../config/upstream.ts";
+
+/**
+ * `import.meta.glob` rather than `fs.readFile`: it resolves relative to
+ * THIS file at build time (a plain path would be resolved against the
+ * build's working directory, which is not the same thing), and a pattern
+ * that matches nothing yields an empty object instead of throwing — which
+ * is exactly the "checkout absent" case.
+ */
+const changelogs = import.meta.glob<string>("../../.upstream/CHANGELOG.md", {
+	query: "?raw",
+	import: "default",
+	eager: true,
+});
+
+const source = Object.values(changelogs)[0] ?? null;
+const rendered = source ? (await (await createMarkdownProcessor({})).render(source)).code : null;
+
+const title = `Changelog — Warren ${UPSTREAM.ref}`;
+const description = `Release notes for warren, generated from CHANGELOG.md at ${UPSTREAM.ref}.`;
+---
+
+<BaseLayout title={title} description={description}>
+	<section class="shell head">
+		<h1>Changelog</h1>
+		<p class="lede">
+			Every release of warren, straight from <code>CHANGELOG.md</code> at
+			<a href={`${BLOB_BASE}/CHANGELOG.md`} rel="noopener noreferrer">{UPSTREAM.ref}</a>.
+		</p>
+	</section>
+
+	<section class="shell body">
+		{
+			rendered ? (
+				<article class="prose" set:html={rendered} />
+			) : (
+				<p class="empty">
+					The changelog is generated from the pinned upstream checkout, which is not
+					present in this build. Run <code>bun run sync:upstream</code> and rebuild, or
+					read it{" "}
+					<a href={`${BLOB_BASE}/CHANGELOG.md`} rel="noopener noreferrer">
+						on GitHub
+					</a>
+					.
+				</p>
+			)
+		}
+	</section>
+</BaseLayout>
+
+<style>
+	.head {
+		padding-block: 4rem 1rem;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		font-weight: 650;
+		letter-spacing: -0.02em;
+	}
+
+	.lede {
+		margin: 0.75rem 0 0;
+		color: var(--color-muted-foreground);
+	}
+
+	.body {
+		padding-block: 1rem 0;
+	}
+
+	.empty {
+		padding: 1.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background-color: var(--color-muted);
+		color: var(--color-muted-foreground);
+	}
+
+	code {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		padding: 0.125em 0.375em;
+		border-radius: var(--radius-sm);
+		background-color: var(--color-muted);
+	}
+
+	.prose {
+		max-width: 48rem;
+	}
+
+	.prose :global(h2) {
+		margin-top: 3rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid var(--color-border);
+		font-size: 1.5rem;
+		letter-spacing: -0.01em;
+	}
+
+	.prose :global(h3) {
+		margin-top: 2rem;
+		font-size: 1.125rem;
+	}
+
+	.prose :global(ul) {
+		padding-left: 1.25rem;
+	}
+
+	.prose :global(li) {
+		margin-block: 0.375rem;
+	}
+
+	.prose :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		padding: 0.125em 0.375em;
+		border-radius: var(--radius-sm);
+		background-color: var(--color-muted);
+	}
+
+	.prose :global(a) {
+		color: var(--color-primary);
+	}
+</style>

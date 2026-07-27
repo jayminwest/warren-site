@@ -1,0 +1,6 @@
+{
+	"$comment": "Grandfathered accessibility violations, consumed by scripts/check-a11y.ts (the second half of the check:bundle-size gate). `allow` is EMPTY and should stay that way: this repo started clean, and the first audit of dist/ found no serious or critical violations at all. An entry here is a permanent written record that a page shipped a serious defect, so add one only when the fix genuinely cannot land in the same change, and write a reason a reviewer would accept.",
+	"$comment_ratchet": "The ratchet only goes DOWN. Each entry must name the rule id, the page (path relative to dist/), and the CSS selector axe reported; `*` is accepted for page or selector but is a much weaker claim and needs a correspondingly better reason. An entry that stops matching anything FAILS the gate, so a fixed violation forces its entry to be deleted instead of quietly rotting. The script never auto-edits this file.",
+	"$comment_scope": "Only `critical` and `serious` violations fail the build; `moderate` and `minor` already print as warnings, so they never need an entry here. Rules axe cannot decide under jsdom (colour-contrast and friends — no layout engine) are listed as `incomplete` on every run and are outside this gate entirely.",
+	"allow": []
+}

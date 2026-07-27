@@ -1,0 +1,137 @@
+---
+/**
+ * Footer for the standalone pages.
+ *
+ * The one-line blurb is authored in `content/footer.md` so the prose
+ * guard lints it; the link labels are navigation, not copy.
+ */
+import { Content as FooterBlurb } from "../../content/footer.md";
+import { UPSTREAM } from "../config/upstream.ts";
+
+const year = new Date().getUTCFullYear();
+
+const columns = [
+	{
+		heading: "Docs",
+		links: [
+			{ href: "/docs/quickstart/", label: "Quickstart" },
+			{ href: "/docs/project-setup/", label: "Project setup" },
+			{ href: "/docs/self-host/kubernetes/", label: "Self-host on Kubernetes" },
+			{ href: "/docs/api/", label: "HTTP API" },
+		],
+	},
+	{
+		heading: "Concepts",
+		links: [
+			{ href: "/docs/concepts/philosophy/", label: "Philosophy" },
+			{ href: "/docs/concepts/constitution/", label: "Constitution" },
+			{ href: "/docs/concepts/runtimes/", label: "Runtime providers" },
+		],
+	},
+	{
+		heading: "Project",
+		links: [
+			{ href: "https://github.com/jayminwest/warren", label: "GitHub" },
+			{ href: "https://github.com/jayminwest/warren/issues", label: "Issues" },
+			{ href: "/changelog/", label: "Changelog" },
+			{ href: "/llms.txt", label: "llms.txt" },
+		],
+	},
+];
+---
+
+<footer class="site-footer">
+	<div class="shell">
+		<div class="blurb"><FooterBlurb /></div>
+		<div class="columns">
+			{
+				columns.map((column) => (
+					<div>
+						<h2>{column.heading}</h2>
+						<ul>
+							{column.links.map((link) => (
+								<li>
+									<a href={link.href}>{link.label}</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))
+			}
+		</div>
+		<p class="legal">
+			<span>&copy; {year} Jaymin West &middot; MIT licensed</span>
+			<span class="ref">docs built from {UPSTREAM.repo}@{UPSTREAM.ref}</span>
+		</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		border-top: 1px solid var(--color-border);
+		background-color: var(--color-muted);
+		padding-block: 3rem 2rem;
+		margin-top: 4rem;
+	}
+
+	.blurb {
+		max-width: 52ch;
+		margin-bottom: 2.5rem;
+		color: var(--color-muted-foreground);
+		font-size: 0.9375rem;
+	}
+
+	.blurb :global(p) {
+		margin: 0;
+	}
+
+	.columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		gap: 2rem;
+	}
+
+	h2 {
+		margin: 0 0 0.75rem;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-muted-foreground);
+	}
+
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	a {
+		color: var(--color-fg);
+		font-size: 0.9375rem;
+		text-decoration: none;
+	}
+
+	a:hover {
+		color: var(--color-primary);
+		text-decoration: underline;
+	}
+
+	.legal {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin: 2.5rem 0 0;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.8125rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.ref {
+		font-family: var(--font-mono);
+	}
+</style>
