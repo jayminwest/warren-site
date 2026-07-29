@@ -10,6 +10,8 @@ This repository builds warren.run: the marketing site and the documentation for 
 
 The site copies nothing from warren by hand. One pinned upstream ref in `src/config/upstream.ts` names the release tag that every derived page comes from. A sync script pulls the API reference, the CLI reference, the SDK reference, the narrative docs, the changelog, and the design tokens at that ref. To publish new docs, bump the ref and run the sync.
 
+The dependency runs one way. Warren knows nothing about this repository, and it must stay that way: no webhook, no dispatch, no step in warren's CI. This site is a consumer that polls. `.github/workflows/sync-upstream.yml` checks warren's latest release every night, bumps the ref, runs the sync and the gates, and opens a pull request. When the sync fails, which happens when warren moves or deletes a file the manifest names, the workflow files an issue instead of failing quietly.
+
 ## Tech stack at a glance
 
 - **Runtime:** Bun. TypeScript runs directly, with no separate build step.
@@ -108,6 +110,7 @@ bun run check:prose
 - `scripts/` — the quality gates and the upstream sync.
 - `budgets/` — the JSON budget files that the ratchets read.
 - `.github/workflows/ci.yml` — the CI pipeline, one step per gate.
+- `.github/workflows/sync-upstream.yml` — the nightly upstream poll.
 
 ## Continuous integration
 

@@ -2,7 +2,7 @@
 /*
  * GENERATED — DO NOT HAND-EDIT. Run `bun run sync:upstream`.
  *
- * Source: jayminwest/warren `src/ui/src/index.css` @ ref `v0.11.0`
+ * Source: jayminwest/warren `src/ui/src/index.css` @ ref `v0.12.2`
  *         (the `@theme { … }` block starting at line 42, plus the
  *         `:root[data-theme="dark"]` override block that follows it).
  *
@@ -58,7 +58,7 @@
 	 * without competing with the status palette below. Used for primary
 	 * buttons, active nav, focus rings, and links.
 	 */
-	--color-primary: oklch(58% 0.10 152);
+	--color-primary: oklch(58% 0.1 152);
 	--color-primary-foreground: oklch(99% 0.005 152);
 
 	/*
@@ -71,7 +71,7 @@
 	--color-warning: oklch(72% 0.15 75);
 	--color-warning-foreground: oklch(32% 0.08 75);
 	--color-info: oklch(60% 0.15 240);
-	--color-info-foreground: oklch(32% 0.10 240);
+	--color-info-foreground: oklch(32% 0.1 240);
 	--color-danger: oklch(58% 0.22 27);
 	--color-danger-foreground: oklch(32% 0.14 27);
 	--color-neutral: oklch(55% 0.02 264);
@@ -96,10 +96,9 @@
 	 * gray ramp rather than pure black on tinted surfaces.
 	 */
 	--shadow-sm: 0 1px 2px 0 oklch(20% 0.01 264 / 0.06);
-	--shadow-md:
-		0 4px 6px -1px oklch(20% 0.01 264 / 0.10), 0 2px 4px -2px oklch(20% 0.01 264 / 0.06);
+	--shadow-md: 0 4px 6px -1px oklch(20% 0.01 264 / 0.1), 0 2px 4px -2px oklch(20% 0.01 264 / 0.06);
 	--shadow-lg:
-		0 10px 15px -3px oklch(20% 0.01 264 / 0.10), 0 4px 6px -4px oklch(20% 0.01 264 / 0.06);
+		0 10px 15px -3px oklch(20% 0.01 264 / 0.1), 0 4px 6px -4px oklch(20% 0.01 264 / 0.06);
 
 	/* Z-index scale — discrete layers so ad-hoc z-[N] doesn't drift. */
 	--z-sticky: 10;
@@ -124,7 +123,7 @@
 	--color-muted: oklch(20% 0.012 264);
 	--color-muted-foreground: oklch(67% 0.012 264);
 	--color-border: oklch(28% 0.012 264);
-	--color-card: oklch(17% 0.010 264);
+	--color-card: oklch(17% 0.01 264);
 	--color-accent: oklch(24% 0.012 264);
 	--color-ring: oklch(60% 0.015 264);
 

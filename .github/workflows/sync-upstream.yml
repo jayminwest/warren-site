@@ -1,0 +1,181 @@
+name: Sync upstream
+
+# Keeps this site's pinned upstream ref current with warren's newest
+# release, and opens a pull request when it moves.
+#
+# DIRECTION MATTERS. jayminwest/warren has no knowledge of this
+# repository and must never gain any: no webhook, no repository_dispatch,
+# no step in warren's own CI. This workflow POLLS. Everything it needs is
+# public — the releases API, the git tags, the files `sync:upstream`
+# reads — so the coupling lives entirely on this side, in
+# `src/config/upstream.ts`.
+#
+# Why nightly rather than on a release event: a release event would have
+# to be sent BY warren, which is the coupling this design refuses. The
+# poll is cheap and idempotent — the ref only moves when warren cuts a
+# release, so most runs exit in seconds having changed nothing.
+#
+# Why `/releases/latest` rather than the newest tag: that endpoint skips
+# drafts and prereleases, so it is the closest thing warren publishes to
+# "the release a reader should be pointed at". It is not a perfect signal
+# — warren currently publishes a release before its container image is
+# built, so a tag whose image failed can still be `latest` — which is
+# why this workflow runs the full gate suite and opens a PR for a human
+# rather than committing to main.
+
+on:
+  schedule:
+    # 07:17 UTC. Off the hour on purpose: the top of the hour is when
+    # GitHub's scheduled-workflow queue is most congested.
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Upstream ref to pin (default: warren's latest release)"
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Resolve the target ref
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OVERRIDE: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          CURRENT=$(grep -oE 'ref: "v[0-9]+\.[0-9]+\.[0-9]+"' src/config/upstream.ts \
+            | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+          if [ -z "$CURRENT" ]; then
+            echo "::error::Could not read the pinned ref from src/config/upstream.ts. The UPSTREAM block was restructured; update the pattern in this workflow."
+            exit 1
+          fi
+          if [ -n "${OVERRIDE}" ]; then
+            TARGET="${OVERRIDE}"
+          else
+            TARGET=$(gh api repos/jayminwest/warren/releases/latest --jq .tag_name)
+          fi
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          if [ "$CURRENT" = "$TARGET" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already pinned at $CURRENT — nothing to do."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Pinned at $CURRENT; warren's latest is $TARGET."
+          fi
+
+      - name: Bump the pinned ref
+        if: steps.target.outputs.changed == 'true'
+        env:
+          TARGET: ${{ steps.target.outputs.target }}
+        run: |
+          set -euo pipefail
+          perl -pi -e 's{ref: "v[0-9]+\.[0-9]+\.[0-9]+"}{ref: "'"$TARGET"'"}' src/config/upstream.ts
+          # A no-op substitution means the pattern stopped matching, which
+          # would otherwise sail on and open an empty pull request.
+          git diff --quiet src/config/upstream.ts && {
+            echo "::error::Bumping the ref to $TARGET changed nothing in src/config/upstream.ts."
+            exit 1
+          }
+
+      - run: bun install --frozen-lockfile
+        if: steps.target.outputs.changed == 'true'
+
+      # Regenerates every derived surface: the narrative docs, the CLI
+      # reference, facts.generated.json, and the design tokens. This is
+      # the step that fails when warren deletes or moves a file the
+      # manifest names — see the failure-issue step below.
+      - name: Regenerate the derived content
+        if: steps.target.outputs.changed == 'true'
+        run: bun run sync:upstream
+
+      # The same gates a human would have to pass. Running them HERE, not
+      # just on the pull request, is what makes the PR trustworthy: a
+      # token-authored PR does not trigger CI (GitHub suppresses workflow
+      # runs for GITHUB_TOKEN-created events), so without this the PR
+      # would arrive with no checks at all.
+      - name: Run the full gate suite
+        if: steps.target.outputs.changed == 'true'
+        run: bun run check:all
+
+      - name: Open the pull request
+        if: steps.target.outputs.changed == 'true'
+        env:
+          # A PAT, when configured, makes the PR trigger CI as well. Its
+          # absence is not a failure: the gate suite above has already
+          # run, and the PR body says which of the two happened.
+          GH_TOKEN: ${{ secrets.SYNC_PAT || github.token }}
+          HAS_PAT: ${{ secrets.SYNC_PAT != '' }}
+          CURRENT: ${{ steps.target.outputs.current }}
+          TARGET: ${{ steps.target.outputs.target }}
+        run: |
+          set -euo pipefail
+          BRANCH="sync/warren-${TARGET}"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Branch $BRANCH already exists on origin; a previous run opened it. Nothing to do."
+            exit 0
+          fi
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "docs: sync derived content from warren ${TARGET}"
+          git push origin "$BRANCH"
+
+          if [ "$HAS_PAT" = "true" ]; then
+            CHECKS="CI will run on this pull request."
+          else
+            CHECKS="CI does NOT run on this pull request: GitHub suppresses workflow runs for token-authored events, and no \`SYNC_PAT\` secret is configured. The full gate suite ran in the job that opened it."
+          fi
+
+          NOTES=$(gh release view "$TARGET" --repo jayminwest/warren --json body --jq .body 2>/dev/null || echo "")
+
+          {
+            printf 'Pinned ref moves from `%s` to `%s`.\n\n' "$CURRENT" "$TARGET"
+            printf 'Every file in this diff is derived — `bun run sync:upstream` wrote all of it from warren at `%s`. Review the changelog delta and the docs diff, not the mechanics.\n\n' "$TARGET"
+            printf '%s\n\n' "$CHECKS"
+            printf 'Upstream compare: https://github.com/jayminwest/warren/compare/%s...%s\n\n' "$CURRENT" "$TARGET"
+            if [ -n "$NOTES" ]; then
+              printf '<details><summary>warren %s release notes</summary>\n\n%s\n\n</details>\n' "$TARGET" "$NOTES"
+            fi
+          } > pr-body.md
+
+          gh pr create \
+            --title "docs: sync derived content from warren ${TARGET}" \
+            --body-file pr-body.md \
+            --head "$BRANCH" \
+            --base main
+
+      # A sync that throws leaves NO pull request, so without this the
+      # only trace is a red workflow nobody reads and the site quietly
+      # keeps serving a stale ref. That is the exact failure this whole
+      # workflow exists to prevent, so it gets an issue.
+      - name: File an issue when the sync fails
+        if: failure() && steps.target.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET: ${{ steps.target.outputs.target }}
+          CURRENT: ${{ steps.target.outputs.current }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          TITLE="sync:upstream failed for warren ${TARGET}"
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number --jq 'length')
+          if [ "$EXISTING" != "0" ]; then
+            echo "An open issue already tracks this failure."
+            exit 0
+          fi
+          gh issue create --title "$TITLE" --body "$(printf 'The nightly upstream sync could not move the pinned ref from `%s` to `%s`.\n\nRun: %s\n\nThe usual cause is that warren renamed, moved, or deleted a file this site derives from. Check `UPSTREAM_DOCS` and `EXTRA_SOURCES` against the upstream tree at `%s`, then fix the manifest and re-run the workflow.\n\nUntil this is resolved the site keeps serving docs for `%s`.\n' "$CURRENT" "$TARGET" "$RUN_URL" "$TARGET" "$CURRENT")"

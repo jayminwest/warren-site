@@ -1,7 +1,6 @@
 ---
 /** Navigation for the standalone pages. Links only — no client JS. */
-import { Image } from "astro:assets";
-import logo from "../assets/logo.png";
+import WarrenLogo from "./WarrenLogo.astro";
 
 const links = [
 	{ href: "/docs/quickstart/", label: "Docs" },
@@ -14,7 +13,7 @@ const links = [
 <header class="site-header">
 	<div class="shell bar">
 		<a class="brand" href="/">
-			<Image src={logo} alt="Warren" width={132} densities={[1, 2]} loading="eager" />
+			<WarrenLogo size={30} />
 		</a>
 		<nav aria-label="Main">
 			<ul>
@@ -50,17 +49,14 @@ const links = [
 		align-items: center;
 		justify-content: space-between;
 		gap: 1.5rem;
-		min-height: 3.5rem;
+		min-height: 4rem;
 	}
 
 	.brand {
 		display: inline-flex;
 		align-items: center;
-	}
-
-	.brand img {
-		height: 1.5rem;
-		width: auto;
+		color: var(--color-fg);
+		text-decoration: none;
 	}
 
 	nav ul {

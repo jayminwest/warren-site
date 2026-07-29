@@ -1,21 +1,48 @@
 ---
 /**
- * One feature block on the landing page.
+ * One pillar on the landing page.
  *
- * The eyebrow and the title come from a `content/features/*.md`
- * frontmatter block; the body is that file's markdown, passed in as the
- * default slot so the prose guard lints it. Nothing here holds copy.
+ * The eyebrow, the glyph name, and the title come from a
+ * `content/features/*.md` frontmatter block; the body is that file's
+ * markdown, passed in as the default slot so the prose guard lints it.
+ * Nothing here holds copy.
+ *
+ * The glyph is chosen by NAME from the table below rather than passed in
+ * as markup, so a content file cannot inject arbitrary SVG and every card
+ * draws from the same small set. Each path is a single stroke in
+ * `currentColor`, and the whole `<svg>` is `aria-hidden`: the heading next
+ * to it already says what the card is about, so an accessible name here
+ * would be read out twice.
  */
+type Glyph = "shield" | "stream" | "loop";
+
+/** Stroke paths on a 24x24 grid, keyed by the name a content file gives. */
+const GLYPHS: Record<Glyph, string> = {
+	// A shield: the sandbox each run is confined to.
+	shield: "M12 3 4 6v6c0 4.5 3.4 7.6 8 9 4.6-1.4 8-4.5 8-9V6l-8-3Z",
+	// Stacked lines of unequal length: the event stream, tailing.
+	stream: "M4 7h16M4 12h11M4 17h6",
+	// An arrow that returns on itself: the run that dispatches its own retry.
+	loop: "M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4",
+};
+
 interface Props {
 	/** Short label above the title, e.g. "Sandbox". */
 	eyebrow: string;
 	title: string;
+	glyph: Glyph;
 }
 
-const { eyebrow, title } = Astro.props;
+const { eyebrow, title, glyph } = Astro.props;
+const path = GLYPHS[glyph];
 ---
 
 <article class="card">
+	<span class="icon" aria-hidden="true">
+		<svg viewBox="0 0 24 24" focusable="false">
+			<path d={path}></path>
+		</svg>
+	</span>
 	<p class="eyebrow">{eyebrow}</p>
 	<h3>{title}</h3>
 	<div class="body"><slot /></div>
@@ -28,6 +55,29 @@ const { eyebrow, title } = Astro.props;
 		border-radius: var(--radius-xl);
 		background-color: var(--color-card);
 		box-shadow: var(--shadow-sm);
+	}
+
+	.icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		margin-bottom: 1rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background-color: var(--color-muted);
+		color: var(--color-primary);
+	}
+
+	.icon svg {
+		width: 1.375rem;
+		height: 1.375rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
 	.eyebrow {

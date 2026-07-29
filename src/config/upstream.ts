@@ -17,7 +17,7 @@ export const UPSTREAM = {
 	owner: "jayminwest",
 	repo: "warren",
 	/** Release tag the docs are built from. Bump to publish new docs. */
-	ref: "v0.11.0",
+	ref: "v0.12.2",
 } as const;
 
 /** Raw file base for the pinned ref, e.g. `<base>/README.md`. */
@@ -57,12 +57,6 @@ export const UPSTREAM_DOCS: readonly UpstreamDoc[] = [
 		source: "docs/RUNBOOK-K8S.md",
 		slug: "self-host/kubernetes",
 		title: "Kubernetes",
-		group: "Self-host",
-	},
-	{
-		source: "docs/deploy/gke-deploy-prep.md",
-		slug: "self-host/gke",
-		title: "GKE preparation",
 		group: "Self-host",
 	},
 	{

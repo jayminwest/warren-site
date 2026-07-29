@@ -1,6 +1,7 @@
 ---
-order: 3
+order: 2
 eyebrow: "Steer"
+glyph: "stream"
 title: "Change your mind mid-run"
 ---
 

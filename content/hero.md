@@ -3,6 +3,10 @@ eyebrow: "Open source · self-hosted · MIT"
 headline: "Coolify for coding agents"
 title: "Warren — self-hostable control plane for coding agents"
 description: "Warren runs coding agents against your GitHub repositories, on your own infrastructure, under your own API keys. Point it at a repository, pick an agent, get a pull request."
+demoCta:
+  label: "Watch it live"
+  note: "app.warren.run · real runs, no login"
+  href: "https://app.warren.run"
 primaryCta:
   label: "Read the quickstart"
   href: "/docs/quickstart/"

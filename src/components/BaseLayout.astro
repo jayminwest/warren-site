@@ -33,6 +33,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://warren.run"
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical.href} />
+		{/*
+			SVG first, PNG second: the SVG carries a `prefers-color-scheme`
+			block so the mark stays legible on a light AND a dark tab strip,
+			which a single raster cannot do. Browsers that ignore SVG icons
+			fall back to the second link, whose PNG is transparent and
+			mid-gray for the same reason.
+		*/}
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<link rel="icon" href="/icon.png" type="image/png" />
 		<meta name="color-scheme" content="light dark" />
 		{noindex && <meta name="robots" content="noindex" />}
@@ -40,6 +48,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://warren.run"
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical.href} />
+		{/*
+			The OPAQUE lockup, deliberately. A social card is composited onto
+			a surface this site does not control, so a transparent asset would
+			render light-gray-on-white in some clients. This is the one place
+			the dark-canvas raster is the right answer.
+		*/}
 		<meta property="og:image" content={new URL("/logo.png", canonical).href} />
 		<meta name="twitter:card" content="summary_large_image" />
 	</head>

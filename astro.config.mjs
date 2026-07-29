@@ -104,21 +104,18 @@ export default defineConfig({
 			title: "Warren",
 			description:
 				"Self-hostable control plane for ephemeral cloud agents. Point it at a repo, pick an agent, get a pull request.",
-			logo: {
-				/**
-				 * `alt` is EMPTY on purpose. With `replacesTitle: true`
-				 * Starlight already renders the site title next to the image in
-				 * an `sr-only` span, so any `alt` text here is announced a
-				 * second time — axe's `image-redundant-alt`, on every page. The
-				 * image is decorative once the accessible name exists in the
-				 * markup beside it. Putting "Warren" back reopens the finding
-				 * across the whole site.
-				 */
-				src: "./src/assets/logo.png",
-				alt: "",
-				replacesTitle: true,
+			/**
+			 * No `logo` here on purpose. That option takes an image path, and
+			 * the lockup is now an inline SVG so it can be transparent and
+			 * follow the theme — see the header of `WarrenLogo.astro`. The
+			 * `SiteTitle` override below renders it instead, which also
+			 * removes the `alt=""` / `replacesTitle` dance the raster needed
+			 * to keep axe's `image-redundant-alt` quiet.
+			 */
+			components: {
+				SiteTitle: "./src/components/StarlightSiteTitle.astro",
 			},
-			favicon: "/icon.png",
+			favicon: "/favicon.svg",
 			social: [
 				{ icon: "github", label: "GitHub", href: "https://github.com/jayminwest/warren" },
 			],

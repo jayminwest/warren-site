@@ -15,6 +15,7 @@
  */
 import { createMarkdownProcessor } from "@astrojs/markdown-remark";
 
+import { stripLeadingH1 } from "../../scripts/upstream/markdown.ts";
 import BaseLayout from "../components/BaseLayout.astro";
 import { BLOB_BASE, UPSTREAM } from "../config/upstream.ts";
 
@@ -31,8 +32,16 @@ const changelogs = import.meta.glob<string>("../../.upstream/CHANGELOG.md", {
 	eager: true,
 });
 
+/**
+ * `stripLeadingH1` is the same transform the docs pipeline applies to every
+ * upstream page, reused rather than reimplemented. Warren's CHANGELOG.md
+ * opens with `# Changelog`, and this page already renders its own `<h1>`
+ * with that exact word — so without the strip the reader sees the heading
+ * twice and the document has two `<h1>` elements.
+ */
 const source = Object.values(changelogs)[0] ?? null;
-const rendered = source ? (await (await createMarkdownProcessor({})).render(source)).code : null;
+const body = source === null ? null : stripLeadingH1(source);
+const rendered = body ? (await (await createMarkdownProcessor({})).render(body)).code : null;
 
 const title = `Changelog — Warren ${UPSTREAM.ref}`;
 const description = `Release notes for warren, generated from CHANGELOG.md at ${UPSTREAM.ref}.`;
@@ -42,7 +51,7 @@ const description = `Release notes for warren, generated from CHANGELOG.md at ${
 	<section class="shell head">
 		<h1>Changelog</h1>
 		<p class="lede">
-			Every release of warren, straight from <code>CHANGELOG.md</code> at
+			Every release of warren, straight from <code>CHANGELOG.md</code> at{" "}
 			<a href={`${BLOB_BASE}/CHANGELOG.md`} rel="noopener noreferrer">{UPSTREAM.ref}</a>.
 		</p>
 	</section>

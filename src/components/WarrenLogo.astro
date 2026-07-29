@@ -1,0 +1,131 @@
+---
+/**
+ * The warren lockup: burrow-network mark plus the wordmark.
+ *
+ * INLINE SVG, not an image, for three reasons the previous `logo.png`
+ * could not satisfy:
+ *
+ *   1. Transparency. `branding/generate-logo.py` renders on an opaque
+ *      `(24,25,28)` canvas, so the raster carried a near-black slab that
+ *      sat wrong on this site's LIGHT default theme.
+ *   2. Theme response. The mark draws in `currentColor`, so it follows
+ *      `--color-fg` through both themes instead of being fixed to the one
+ *      background it was rendered against.
+ *   3. Scale. A 640x220 raster squeezed into the nav rendered the mark at
+ *      roughly 24px, and its baked-in tagline at about 2px.
+ *
+ * The geometry is warren's own mark, copied from the pointed-top hex in
+ * `src/ui/public/favicon.svg` upstream: six run nodes on a tunnel ring,
+ * one active spoke, and a rounded-square control plane at the centre. It
+ * is duplicated here rather than derived, because it is a BRAND asset on
+ * a 100-byte-of-geometry scale, not a documentation surface. The colors
+ * are the part that must not drift, and those are all site tokens.
+ *
+ * The wordmark is real text, so it inherits the page font and is
+ * selectable, and it gives the surrounding link its accessible name —
+ * which is why the `<svg>` is `aria-hidden`. Do not add `alt`-style text
+ * to the mark: an accessible name in both places is announced twice, the
+ * `image-redundant-alt` finding the old `alt=""` was working around.
+ */
+interface Props {
+	/** Mark height in px. The wordmark scales from it. */
+	size?: number;
+	/** Extra classes for the wrapper, for per-header spacing. */
+	class?: string;
+}
+
+const { size = 30, class: className } = Astro.props;
+---
+
+<span class:list={["lockup", className]} style={`--mark-size: ${size}px`}>
+	<svg class="mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+		<g class="edge">
+			<line x1="50" y1="18" x2="77.713" y2="34"></line>
+			<line x1="77.713" y1="34" x2="77.713" y2="66"></line>
+			<line x1="77.713" y1="66" x2="50" y2="82"></line>
+			<line x1="50" y1="82" x2="22.287" y2="66"></line>
+			<line x1="22.287" y1="66" x2="22.287" y2="34"></line>
+			<line x1="22.287" y1="34" x2="50" y2="18"></line>
+		</g>
+		<g class="spoke">
+			<line x1="50" y1="50" x2="50" y2="18"></line>
+			<line x1="50" y1="50" x2="77.713" y2="66"></line>
+			<line x1="50" y1="50" x2="50" y2="82"></line>
+			<line x1="50" y1="50" x2="22.287" y2="66"></line>
+			<line x1="50" y1="50" x2="22.287" y2="34"></line>
+		</g>
+		<g class="node">
+			<circle cx="50" cy="18" r="4.5"></circle>
+			<circle cx="77.713" cy="66" r="4.5"></circle>
+			<circle cx="50" cy="82" r="4.5"></circle>
+			<circle cx="22.287" cy="66" r="4.5"></circle>
+			<circle cx="22.287" cy="34" r="4.5"></circle>
+		</g>
+		<line class="spoke active" x1="50" y1="50" x2="77.713" y2="34"></line>
+		<circle class="active" cx="77.713" cy="34" r="4.5"></circle>
+		<rect class="center" x="42" y="42" width="16" height="16" rx="2.8"></rect>
+	</svg>
+	<span class="wordmark" translate="no">warren</span>
+</span>
+
+<style>
+	.lockup {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--color-fg);
+	}
+
+	.mark {
+		flex: none;
+		width: var(--mark-size);
+		height: var(--mark-size);
+		/*
+		 * The active spoke and node are the only marks drawn at full
+		 * strength; everything else is the same ink at lower opacity. One
+		 * color source means the mark cannot drift out of step with the
+		 * text beside it in either theme.
+		 */
+		color: currentColor;
+	}
+
+	.edge line {
+		stroke: currentColor;
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		opacity: 0.3;
+	}
+
+	.spoke line,
+	line.spoke {
+		stroke: currentColor;
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		opacity: 0.55;
+	}
+
+	.node circle {
+		fill: currentColor;
+		opacity: 0.55;
+	}
+
+	line.active {
+		opacity: 1;
+	}
+
+	circle.active {
+		fill: currentColor;
+	}
+
+	/* The control plane, in the one accent this site is allowed to use. */
+	.center {
+		fill: var(--color-primary);
+	}
+
+	.wordmark {
+		font-size: calc(var(--mark-size) * 0.62);
+		font-weight: 650;
+		letter-spacing: -0.02em;
+		line-height: 1;
+	}
+</style>

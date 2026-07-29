@@ -1,0 +1,45 @@
+---
+/**
+ * Override of Starlight's `SiteTitle`, so the docs header shows the same
+ * lockup as the standalone pages.
+ *
+ * Starlight's `logo` config option takes an image PATH, so it cannot
+ * render an inline SVG — and an inline SVG is the whole point (see the
+ * header of `WarrenLogo.astro`: the old `logo.png` carried an opaque
+ * near-black background into a light-themed header). Overriding the
+ * component is the supported way to put real markup there, so
+ * `astro.config.mjs` sets `components.SiteTitle` to this file and no
+ * longer sets `logo` at all.
+ *
+ * The target is `/` — the landing page — which is also where
+ * `SiteHeader.astro` points the same lockup, so the brand behaves
+ * identically inside and outside the docs. Starlight's default reads
+ * `Astro.locals.starlightRoute.siteTitleHref` instead, which accounts for
+ * `base` and for the active locale. Neither is configured here (the build
+ * pins `BASE_URL=/` and the site is single-locale), and reading that
+ * value would mean adding `@astrojs/starlight/locals` to the `types`
+ * array in `tsconfig.json` — which resolves to Starlight's SOURCE and
+ * fails `tsc` on its `virtual:starlight/*` imports. If a base path or a
+ * second locale ever lands, switch to `siteTitleHref` and solve the
+ * typing then.
+ *
+ * The visible wordmark inside `WarrenLogo` is this link's accessible
+ * name, so there is no `sr-only` title span. Starlight's own default
+ * renders one only because its logo is an image with an empty `alt`.
+ */
+import WarrenLogo from "./WarrenLogo.astro";
+---
+
+<a href="/" class="site-title sl-flex">
+	<WarrenLogo size={26} />
+</a>
+
+<style>
+	.site-title {
+		align-items: center;
+		color: var(--color-fg);
+		text-decoration: none;
+		white-space: nowrap;
+		min-width: 0;
+	}
+</style>

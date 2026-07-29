@@ -194,6 +194,17 @@
 		--color-primary: oklch(72% 0.11 152);
 		--color-primary-foreground: oklch(15% 0.01 152);
 		--color-success: oklch(72% 0.13 150);
+		/*
+		 * The status tokens the run panel draws with. A `-foreground` token
+		 * is the one that MUST be here: its light value is a dark ink meant
+		 * for a pale fill, so leaving it out renders the run-state pill
+		 * dark-on-dark and effectively invisible. Adding a status color to
+		 * `RunPanel.astro` means adding its pair here.
+		 */
+		--color-info: oklch(72% 0.14 240);
+		--color-info-foreground: oklch(94% 0.05 240);
+		--color-warning: oklch(80% 0.15 75);
+		--color-neutral: oklch(70% 0.02 264);
 	}
 }
 

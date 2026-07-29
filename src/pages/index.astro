@@ -15,17 +15,14 @@
  * font, radius, or shadow that is not a vendored warren token.
  */
 import { Content as ClosingBody, frontmatter as closingMeta } from "../../content/closing.md";
-import { Content as AgentsBody, frontmatter as agentsMeta } from "../../content/features/agents.md";
-import { Content as OptInBody, frontmatter as optInMeta } from "../../content/features/opt-in.md";
-import { Content as RepairBody, frontmatter as repairMeta } from "../../content/features/repair.md";
+import {
+	Content as AutonomyBody,
+	frontmatter as autonomyMeta,
+} from "../../content/features/autonomy.md";
 import {
 	Content as SandboxBody,
 	frontmatter as sandboxMeta,
 } from "../../content/features/sandbox.md";
-import {
-	Content as ScheduleBody,
-	frontmatter as scheduleMeta,
-} from "../../content/features/schedule.md";
 import { Content as SteerBody, frontmatter as steerMeta } from "../../content/features/steer.md";
 import { Content as HeroBody, frontmatter as heroMeta } from "../../content/hero.md";
 import {
@@ -35,7 +32,8 @@ import {
 import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
 import BaseLayout from "../components/BaseLayout.astro";
 import FeatureCard from "../components/FeatureCard.astro";
-import TerminalSample, { type TerminalLine } from "../components/TerminalSample.astro";
+import Pipeline, { type Step } from "../components/Pipeline.astro";
+import RunPanel, { type EventRow } from "../components/RunPanel.astro";
 import facts from "../config/facts.generated.json";
 
 /** A call to action, as authored in a content file's frontmatter. */
@@ -44,39 +42,39 @@ interface Cta {
 	href: string;
 }
 
+/** The live read-only instance, linked from the hero and the run panel. */
+const DEMO_URL = "https://app.warren.run";
+
 const hero = heroMeta as {
 	eyebrow: string;
 	headline: string;
 	title: string;
 	description: string;
+	demoCta: Cta & { note: string };
 	primaryCta: Cta;
 	secondaryCta: Cta;
 };
-const howItWorks = howItWorksMeta as { eyebrow: string; heading: string };
+const howItWorks = howItWorksMeta as { eyebrow: string; heading: string; steps: Step[] };
 const selfHost = selfHostMeta as { eyebrow: string; heading: string; cta: Cta };
 const closing = closingMeta as { heading: string; cta: Cta };
 
-/** Feature cards, in the order `order` gives them in their frontmatter. */
+/** The pillars, in the order `order` gives them in their frontmatter. */
 const features = [
-	{ meta: agentsMeta, Body: AgentsBody },
 	{ meta: sandboxMeta, Body: SandboxBody },
 	{ meta: steerMeta, Body: SteerBody },
-	{ meta: scheduleMeta, Body: ScheduleBody },
-	{ meta: repairMeta, Body: RepairBody },
-	{ meta: optInMeta, Body: OptInBody },
+	{ meta: autonomyMeta, Body: AutonomyBody },
 ]
 	.map((entry) => ({
 		...entry,
-		meta: entry.meta as { order: number; eyebrow: string; title: string },
+		meta: entry.meta as {
+			order: number;
+			eyebrow: string;
+			title: string;
+			glyph: "shield" | "stream" | "loop";
+		},
 	}))
 	.sort((a, b) => a.meta.order - b.meta.order);
 
-/**
- * A transcript, not a claim: the two commands are from warren's own
- * quickstart and `warren run` tails run events as NDJSON, so the output
- * lines use real event kinds (`state_change`, `tool_use`) and the
- * default `burrow/<run-id>` branch prefix. No timings, no test counts.
- */
 /**
  * Numbers on this page come from `src/config/facts.generated.json`, which
  * `bun run sync:upstream` extracts mechanically from warren at the pinned
@@ -89,19 +87,19 @@ const stats = [
 	{ label: "CLI commands", value: String(facts.cliCommandCount) },
 ];
 
-const terminal = {
-	title: "warren — dispatch a run",
-	lines: [
-		{ kind: "prompt", text: "warren add-project https://github.com/acme/checkout" },
-		{ kind: "muted", text: "cloned to /data/projects/acme/checkout" },
-		{ kind: "prompt", text: 'warren run claude-code checkout -p "fix the flaky auth test"' },
-		{ kind: "out", text: '{"kind":"state_change","payload":{"state":"running"}}' },
-		{ kind: "out", text: '{"kind":"tool_use","payload":{"name":"Read","path":"auth/session.test.ts"}}' },
-		{ kind: "out", text: '{"kind":"tool_use","payload":{"name":"Edit","path":"auth/session.ts"}}' },
-		{ kind: "ok", text: '{"kind":"state_change","payload":{"state":"succeeded"}}' },
-		{ kind: "muted", text: "pushed burrow/run_9f31c47a20b6 · pull request opened" },
-	] satisfies readonly TerminalLine[],
-};
+/**
+ * The rows in the run panel. Warren's real event vocabulary — the kinds
+ * are what the run event stream emits — with no invented timings or
+ * counts. See the header of `RunPanel.astro`.
+ */
+const runEvents = [
+	{ kind: "state", label: "state_change", detail: "queued → running" },
+	{ kind: "tool", label: "tool_use", detail: "Read · auth/session.test.ts" },
+	{ kind: "tool", label: "tool_use", detail: "Edit · auth/session.ts" },
+	{ kind: "message", label: "message", detail: "also cover the expired-token case" },
+	{ kind: "tool", label: "tool_use", detail: "Edit · auth/session.test.ts" },
+	{ kind: "done", label: "state_change", detail: "running → succeeded · pull request opened" },
+] satisfies readonly EventRow[];
 ---
 
 <BaseLayout title={hero.title} description={hero.description}>
@@ -110,6 +108,11 @@ const terminal = {
 			<p class="eyebrow">{hero.eyebrow}</p>
 			<h1>{hero.headline}</h1>
 			<div class="lede"><HeroBody /></div>
+			<a class="cta demo" href={hero.demoCta.href} rel="noopener noreferrer">
+				<span class="pip" aria-hidden="true"></span>
+				<span class="demo-label">{hero.demoCta.label}</span>
+				<span class="demo-note">{hero.demoCta.note}</span>
+			</a>
 			<div class="ctas">
 				<a class="cta primary" href={hero.primaryCta.href}>{hero.primaryCta.label}</a>
 				<a
@@ -124,7 +127,7 @@ const terminal = {
 	</section>
 
 	<section class="shell sample">
-		<TerminalSample title={terminal.title} lines={terminal.lines} />
+		<RunPanel href={DEMO_URL} rows={runEvents} />
 		<dl class="stats">
 			{
 				stats.map((stat) => (
@@ -140,15 +143,16 @@ const terminal = {
 	<section class="shell steps" aria-labelledby="how-it-works">
 		<p class="eyebrow">{howItWorks.eyebrow}</p>
 		<h2 id="how-it-works">{howItWorks.heading}</h2>
-		<div class="steps-body"><HowItWorksBody /></div>
+		<div class="prose steps-lede"><HowItWorksBody /></div>
+		<Pipeline steps={howItWorks.steps} />
 	</section>
 
 	<section class="shell block" aria-labelledby="features">
-		<h2 id="features">What warren gives you</h2>
+		<h2 id="features">Three things you get either way</h2>
 		<div class="features">
 			{
 				features.map(({ meta, Body }) => (
-					<FeatureCard eyebrow={meta.eyebrow} title={meta.title}>
+					<FeatureCard eyebrow={meta.eyebrow} title={meta.title} glyph={meta.glyph}>
 						<Body />
 					</FeatureCard>
 				))
@@ -223,7 +227,48 @@ const terminal = {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.75rem;
+		margin-top: 0.75rem;
+	}
+
+	/*
+	 * The live instance sits ABOVE the quickstart and source buttons and
+	 * gets its own treatment: it is the only link on the page that shows
+	 * warren actually running, so it should not read as a third button in
+	 * a row of three.
+	 */
+	.cta.demo {
+		gap: 0.625rem;
 		margin-top: 2rem;
+		border-color: color-mix(in oklab, var(--color-success) 45%, var(--color-border));
+		background-color: color-mix(in oklab, var(--color-success) 8%, var(--color-card));
+		color: var(--color-fg);
+	}
+
+	.cta.demo:hover {
+		border-color: var(--color-success);
+	}
+
+	.pip {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background-color: var(--color-success);
+	}
+
+	.demo-label {
+		font-weight: 600;
+	}
+
+	.demo-note {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-muted-foreground);
+	}
+
+	@media (max-width: 34rem) {
+		.demo-note {
+			display: none;
+		}
 	}
 
 	.cta {
@@ -299,50 +344,26 @@ const terminal = {
 		margin-bottom: 0.5rem;
 	}
 
-	.steps-body :global(ol) {
-		display: grid;
-		gap: 1rem;
-		margin: 0;
-		padding: 0;
-		max-width: 60ch;
-		list-style: none;
-		counter-reset: step;
+	.steps-lede {
+		margin-bottom: 2rem;
 	}
 
-	.steps-body :global(li) {
-		position: relative;
-		padding-left: 2.5rem;
-		color: var(--color-muted-foreground);
-		counter-increment: step;
-	}
-
-	.steps-body :global(li)::before {
-		content: counter(step);
-		position: absolute;
-		left: 0;
-		top: 0.125rem;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.75rem;
-		height: 1.75rem;
-		border-radius: 50%;
-		background-color: var(--color-muted);
-		border: 1px solid var(--color-border);
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		color: var(--color-primary);
-	}
-
-	.steps-body :global(strong) {
-		color: var(--color-fg);
-		font-weight: 600;
-	}
-
+	/*
+	 * Exactly three columns, not `auto-fit`. Three pillars are a
+	 * deliberate count — the section held six cards and read as a wall —
+	 * and `auto-fit` would reflow them to 2+1 at some widths, which looks
+	 * like one card fell off the row.
+	 */
 	.features {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		grid-template-columns: repeat(3, 1fr);
 		gap: 1rem;
+	}
+
+	@media (max-width: 62rem) {
+		.features {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.prose {

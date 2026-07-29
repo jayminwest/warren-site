@@ -1,6 +1,7 @@
 ---
-order: 2
+order: 1
 eyebrow: "Sandbox"
+glyph: "shield"
 title: "Every run is sandboxed"
 ---
 

@@ -1,0 +1,270 @@
+---
+/**
+ * A drawing of warren's run-detail view, and a link to the real one.
+ *
+ * This replaced a hand-written CLI transcript. Warren is driven mostly
+ * from its UI and by other agents over the HTTP API, so a terminal
+ * transcript under the hero sold the wrong surface.
+ *
+ * DRAWING, not a screenshot, and not a live view. The whole panel is one
+ * anchor to `app.warren.run`, and the chrome shows that host, so the
+ * honest reading is "this is what that looks like — go and see it". Two
+ * reasons it is CSS rather than an image: the landing page is pinned at
+ * ZERO client JS and zero bytes of route script
+ * (`budgets/bundle-size-budgets.json`), and a raster would silently rot
+ * every time warren's UI moved while nothing on this site failed.
+ *
+ * The event kinds (`state_change`, `tool_use`) and the `burrow/<run-id>`
+ * branch prefix are warren's real vocabulary, taken from the run event
+ * stream. No timings and no test counts: those would be invented numbers,
+ * and every number on this page comes from `facts.generated.json`.
+ */
+
+/** One row in the event stream. `kind` picks the row's color and glyph. */
+export type EventRow = {
+	kind: "state" | "tool" | "message" | "done";
+	/** The event kind as warren names it on the wire. */
+	label: string;
+	detail: string;
+};
+
+interface Props {
+	/** Host shown in the panel chrome, and the link target. */
+	href: string;
+	rows: readonly EventRow[];
+}
+
+const { href, rows } = Astro.props;
+---
+
+<a class="panel" href={href} rel="noopener noreferrer">
+	<span class="chrome">
+		<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+		<span class="host">app.warren.run</span>
+		<span class="live"><span class="pip" aria-hidden="true"></span>live</span>
+	</span>
+
+	<span class="head">
+		<span class="run-id">run_9f31c47a20b6</span>
+		<span class="meta">
+			<span class="tag">claude-code</span>
+			<span class="tag">acme/checkout</span>
+		</span>
+		<span class="run-state">running</span>
+	</span>
+
+	<span class="stream">
+		{
+			rows.map((row) => (
+				<span class:list={["row", row.kind]}>
+					<span class="dot" aria-hidden="true"></span>
+					<span class="label">{row.label}</span>
+					<span class="detail">{row.detail}</span>
+				</span>
+			))
+		}
+	</span>
+
+	<span class="foot">
+		<span class="branch">burrow/run_9f31c47a20b6</span>
+		<span class="cta">Open the live demo</span>
+	</span>
+</a>
+
+<style>
+	/*
+	 * Every element inside is a `span`, and the layout comes from
+	 * `display` rules rather than from block elements. An anchor may not
+	 * contain block-level content, and wrapping the whole panel in one
+	 * anchor is what makes the drawing lead somewhere real.
+	 */
+	.panel {
+		display: block;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-xl);
+		background-color: var(--color-card);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		color: var(--color-fg);
+		text-decoration: none;
+	}
+
+	.panel:hover {
+		border-color: var(--color-primary);
+	}
+
+	.chrome {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		background-color: var(--color-muted);
+	}
+
+	.dots {
+		display: inline-flex;
+		gap: 0.375rem;
+	}
+
+	.dots i {
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 50%;
+		background-color: var(--color-border);
+	}
+
+	.host {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.live {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-success);
+	}
+
+	.pip {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background-color: var(--color-success);
+	}
+
+	.head {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		padding: 1rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.run-id {
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		font-weight: 500;
+	}
+
+	.meta {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+	}
+
+	.tag {
+		padding: 0.125rem 0.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-muted-foreground);
+	}
+
+	/*
+	 * `run-state`, not `state`: the event rows carry a KIND class, and one
+	 * of those kinds is `state`. A bare `.state` rule matched `.row.state`
+	 * too, which dragged the pill's `margin-left: auto` and fill onto the
+	 * first event row and shoved it to the right edge.
+	 */
+	.run-state {
+		margin-left: auto;
+		padding: 0.125rem 0.625rem;
+		border-radius: var(--radius-sm);
+		background-color: color-mix(in oklab, var(--color-info) 18%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-info-foreground);
+	}
+
+	.stream {
+		display: grid;
+		gap: 0.125rem;
+		padding: 0.75rem 1rem;
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: auto auto 1fr;
+		align-items: baseline;
+		gap: 0.625rem;
+		padding-block: 0.25rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+	}
+
+	.dot {
+		width: 0.375rem;
+		height: 0.375rem;
+		border-radius: 50%;
+		background-color: var(--color-neutral);
+	}
+
+	.row.state .dot {
+		background-color: var(--color-info);
+	}
+
+	.row.tool .dot {
+		background-color: var(--color-primary);
+	}
+
+	.row.message .dot {
+		background-color: var(--color-warning);
+	}
+
+	.row.done .dot {
+		background-color: var(--color-success);
+	}
+
+	.label {
+		color: var(--color-fg);
+	}
+
+	.detail {
+		color: var(--color-muted-foreground);
+		overflow-wrap: anywhere;
+	}
+
+	.row.done .label {
+		color: var(--color-success);
+	}
+
+	.foot {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		padding: 0.75rem 1rem;
+		border-top: 1px solid var(--color-border);
+		background-color: var(--color-muted);
+	}
+
+	.branch {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.cta {
+		margin-left: auto;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--color-primary);
+	}
+
+	@media (max-width: 34rem) {
+		.run-state,
+		.cta {
+			margin-left: 0;
+		}
+	}
+</style>
