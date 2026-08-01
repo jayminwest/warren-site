@@ -55,12 +55,8 @@ jobs:
           OVERRIDE: ${{ inputs.ref }}
         run: |
           set -euo pipefail
-          CURRENT=$(grep -oE 'ref: "v[0-9]+\.[0-9]+\.[0-9]+"' src/config/upstream.ts \
-            | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
-          if [ -z "$CURRENT" ]; then
-            echo "::error::Could not read the pinned ref from src/config/upstream.ts. The UPSTREAM block was restructured; update the pattern in this workflow."
-            exit 1
-          fi
+          # The script needs no node_modules, so it runs before `bun install`.
+          CURRENT=$(bun scripts/bump-upstream-ref.ts --current)
           if [ -n "${OVERRIDE}" ]; then
             TARGET="${OVERRIDE}"
           else
@@ -76,19 +72,18 @@ jobs:
             echo "Pinned at $CURRENT; warren's latest is $TARGET."
           fi
 
+      # The bump-and-verify logic lives in a unit-tested script, not in
+      # shell. Its predecessor here verified the rewrite with
+      # `git diff --quiet <file> && { echo "::error"; exit 1; }` — but
+      # `--quiet` exits 1 when there IS a diff, so the step failed exactly
+      # when the bump had worked, and no sync PR ever opened. The script
+      # throws on a no-op rewrite and on a restructured UPSTREAM block,
+      # with tests in scripts/bump-upstream-ref.test.ts.
       - name: Bump the pinned ref
         if: steps.target.outputs.changed == 'true'
         env:
           TARGET: ${{ steps.target.outputs.target }}
-        run: |
-          set -euo pipefail
-          perl -pi -e 's{ref: "v[0-9]+\.[0-9]+\.[0-9]+"}{ref: "'"$TARGET"'"}' src/config/upstream.ts
-          # A no-op substitution means the pattern stopped matching, which
-          # would otherwise sail on and open an empty pull request.
-          git diff --quiet src/config/upstream.ts && {
-            echo "::error::Bumping the ref to $TARGET changed nothing in src/config/upstream.ts."
-            exit 1
-          }
+        run: bun scripts/bump-upstream-ref.ts "$TARGET"
 
       - run: bun install --frozen-lockfile
         if: steps.target.outputs.changed == 'true'
