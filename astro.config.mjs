@@ -36,6 +36,18 @@ const hasUpstreamCheckout =
 const [starlightTypeDoc, typeDocSidebarGroup] = createStarlightTypeDocPlugin();
 const openAPISidebarGroup = createOpenAPISidebarGroup();
 
+/**
+ * The API reference renders from the SAME `.upstream/` checkout every
+ * other derived surface reads, not from a network fetch of the pinned
+ * ref — `sync:upstream` already guarantees `docs/openapi.yaml` exists
+ * there. The raw.githubusercontent URL survives only as the fallback for
+ * a fresh clone that has never run the sync (the same degraded mode in
+ * which the SDK reference is skipped above), so `bun run build` keeps
+ * working before the first sync.
+ */
+const OPENAPI_LOCAL = ".upstream/docs/openapi.yaml";
+const openApiSchema = existsSync(fromRoot(OPENAPI_LOCAL)) ? OPENAPI_LOCAL : OPENAPI_URL;
+
 if (!hasUpstreamCheckout) {
 	console.warn(
 		`[warren-site] No upstream checkout at ./.upstream — skipping the SDK reference.\n` +
@@ -148,7 +160,7 @@ export default defineConfig({
 				starlightOpenAPI([
 					{
 						base: "docs/api",
-						schema: OPENAPI_URL,
+						schema: openApiSchema,
 						sidebar: {
 							label: "API",
 							collapsed: true,
