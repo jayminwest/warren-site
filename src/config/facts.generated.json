@@ -1,12 +1,11 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.12.2",
-	"version": "0.12.2",
-	"httpPathCount": 37,
+	"ref": "v0.13.1",
+	"version": "0.13.1",
+	"httpPathCount": 36,
 	"burrowCliPin": "0.3.15",
-	"cliCommandCount": 15,
+	"cliCommandCount": 14,
 	"cliCommands": [
-		"register-agent",
 		"add-project",
 		"run",
 		"init",
