@@ -18,10 +18,13 @@ import {
 } from "./upstream/facts.ts";
 import { yamlString } from "./upstream/markdown.ts";
 import {
+	allSourcePaths,
 	CLI_OUT_PATH,
+	EXTRA_SOURCES,
 	expectedOutputPaths,
 	FACTS_OUT_PATH,
 	generatedBanner,
+	missingSourcesReport,
 	planOutputs,
 	THEME_OUT_PATH,
 	type UpstreamSources,
@@ -175,12 +178,49 @@ describe("planOutputs", () => {
 	test("fails when a manifest entry is absent from the checkout", () => {
 		const docs = fullDocs();
 		docs.delete(UPSTREAM_DOCS[0]?.source ?? "");
-		expect(() => planOutputs(sourcesFor(docs))).toThrow(/listed in UPSTREAM_DOCS but absent/);
+		expect(() => planOutputs(sourcesFor(docs))).toThrow(/absent from/);
+	});
+
+	test("names EVERY missing source in one error, not just the first", () => {
+		// A warren docs reshuffle breaks several entries at once; a
+		// throw-on-first here would cost one sync run per renamed file.
+		const docs = fullDocs();
+		const dropped = UPSTREAM_DOCS.slice(0, 3).map((doc) => doc.source);
+		for (const source of dropped) docs.delete(source);
+		let message = "";
+		try {
+			planOutputs(sourcesFor(docs));
+		} catch (error) {
+			message = error instanceof Error ? error.message : String(error);
+		}
+		expect(message).toContain(`${dropped.length} source file(s)`);
+		for (const source of dropped) expect(message).toContain(`- ${source}`);
 	});
 
 	test("refuses to emit an empty CLI reference", () => {
 		const sources = { ...sourcesFor(fullDocs()), cliMain: "export const nothing = 1;" };
 		expect(() => planOutputs(sources)).toThrow(/found no commands/);
+	});
+});
+
+describe("missingSourcesReport", () => {
+	test("attributes each missing path to its manifest entry", () => {
+		const doc = UPSTREAM_DOCS[0]?.source ?? "";
+		const report = missingSourcesReport([doc, "docs/openapi.yaml", "docs/never-existed.md"]);
+		expect(report).toContain("3 source file(s)");
+		expect(report).toContain(`- ${doc}  (UPSTREAM_DOCS -> `);
+		expect(report).toContain("- docs/openapi.yaml  (EXTRA_SOURCES.openapi)");
+		expect(report).toContain("- docs/never-existed.md  (not in the manifest)");
+		expect(report).toContain("ONE pass");
+	});
+});
+
+describe("allSourcePaths", () => {
+	test("covers the narrative docs and every extra source", () => {
+		const paths = allSourcePaths();
+		for (const doc of UPSTREAM_DOCS) expect(paths).toContain(doc.source);
+		for (const source of Object.values(EXTRA_SOURCES)) expect(paths).toContain(source);
+		expect(paths).toHaveLength(UPSTREAM_DOCS.length + Object.keys(EXTRA_SOURCES).length);
 	});
 });
 

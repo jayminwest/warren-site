@@ -118,6 +118,36 @@ function renderCliPage(commands: readonly CliCommand[], cliMain: string): string
 	});
 }
 
+/** Every upstream path the sync reads: the narrative docs plus `EXTRA_SOURCES`. */
+export function allSourcePaths(): string[] {
+	return [...UPSTREAM_DOCS.map((doc) => doc.source), ...Object.values(EXTRA_SOURCES)];
+}
+
+/** Which manifest entry names `path`, for the missing-source report. */
+function sourceRole(path: string): string {
+	const doc = UPSTREAM_DOCS.find((entry) => entry.source === path);
+	if (doc !== undefined) return `UPSTREAM_DOCS -> ${DOCS_OUT_DIR}/${doc.slug}.md`;
+	const extra = Object.entries(EXTRA_SOURCES).find(([, source]) => source === path);
+	return extra === undefined ? "not in the manifest" : `EXTRA_SOURCES.${extra[0]}`;
+}
+
+/**
+ * One actionable report naming EVERY missing source. When warren reshuffles
+ * its docs tree, several manifest entries break at once; throwing on the
+ * first would turn one upstream change into a fix-rerun-fix loop, so the
+ * sync collects the whole set and fails once.
+ */
+export function missingSourcesReport(missing: readonly string[]): string {
+	return [
+		`sync:upstream: ${missing.length} source file(s) named by the manifest are absent from ` +
+			`${UPSTREAM.owner}/${UPSTREAM.repo}@${UPSTREAM.ref}:`,
+		...missing.map((path) => `  - ${path}  (${sourceRole(path)})`),
+		"Warren renamed, moved, or deleted these files. Fix every entry above in ONE pass —",
+		"UPSTREAM_DOCS lives in src/config/upstream.ts, EXTRA_SOURCES in scripts/upstream/plan.ts —",
+		"then re-run: bun run sync:upstream",
+	].join("\n");
+}
+
 /** Every path this sync owns, in write order. Used by `--check` to find orphans. */
 export function expectedOutputPaths(): string[] {
 	return [
@@ -137,16 +167,15 @@ export function expectedOutputPaths(): string[] {
  * three are worse silently than as a failed build.
  */
 export function planOutputs(sources: UpstreamSources): GeneratedFile[] {
+	const missing = UPSTREAM_DOCS.filter((doc) => !sources.docs.has(doc.source));
+	if (missing.length > 0) {
+		throw new Error(missingSourcesReport(missing.map((doc) => doc.source)));
+	}
 	const slugBySource = new Map(UPSTREAM_DOCS.map((doc) => [doc.source, doc.slug] as const));
 	const files: GeneratedFile[] = [];
 	for (const doc of UPSTREAM_DOCS) {
 		const raw = sources.docs.get(doc.source);
-		if (raw === undefined) {
-			throw new Error(
-				`sync:upstream: ${doc.source} is listed in UPSTREAM_DOCS but absent from ` +
-					`${UPSTREAM.owner}/${UPSTREAM.repo}@${UPSTREAM.ref}. Fix the manifest or the ref.`,
-			);
-		}
+		if (raw === undefined) continue; // unreachable: the aggregate check above threw
 		files.push({
 			path: `${DOCS_OUT_DIR}/${doc.slug}.md`,
 			content: renderNarrativePage(doc, raw, slugBySource),

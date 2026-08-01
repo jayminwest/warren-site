@@ -32,11 +32,13 @@ import { dirname, join, relative, resolve } from "node:path";
 
 import { CLONE_URL, UPSTREAM, UPSTREAM_DOCS } from "../src/config/upstream.ts";
 import {
+	allSourcePaths,
 	DOCS_OUT_DIR,
 	EXTRA_SOURCES,
 	expectedOutputPaths,
 	GENERATED_MARKER,
 	type GeneratedFile,
+	missingSourcesReport,
 	planOutputs,
 	type UpstreamSources,
 } from "./upstream/plan.ts";
@@ -94,17 +96,21 @@ function ensureCheckout(): void {
 }
 
 function readCheckoutFile(path: string): string {
-	const absolute = join(CHECKOUT_DIR, path);
-	if (!existsSync(absolute)) {
-		throw new Error(
-			`sync:upstream: ${path} is missing from ${UPSTREAM.repo}@${UPSTREAM.ref}. ` +
-				"The upstream layout changed; update src/config/upstream.ts or scripts/upstream/plan.ts.",
-		);
-	}
-	return readFileSync(absolute, "utf8");
+	return readFileSync(join(CHECKOUT_DIR, path), "utf8");
+}
+
+/**
+ * Fail once with the WHOLE list of missing sources. A warren docs
+ * reshuffle breaks several manifest entries at the same time; reporting
+ * only the first would cost one sync run per renamed file.
+ */
+function assertSourcesPresent(): void {
+	const missing = allSourcePaths().filter((path) => !existsSync(join(CHECKOUT_DIR, path)));
+	if (missing.length > 0) throw new Error(missingSourcesReport(missing));
 }
 
 function readSources(): UpstreamSources {
+	assertSourcesPresent();
 	const docs = new Map<string, string>();
 	for (const doc of UPSTREAM_DOCS) docs.set(doc.source, readCheckoutFile(doc.source));
 	return {
