@@ -13,7 +13,10 @@ import {
 	buildFacts,
 	countOpenApiPaths,
 	extractBurrowPin,
+	extractLicense,
 	extractVersion,
+	parseEnvExampleKeys,
+	parseK8sEnvNames,
 	renderFacts,
 } from "./upstream/facts.ts";
 import { yamlString } from "./upstream/markdown.ts";
@@ -50,9 +53,29 @@ const LEAF: CliCommand = {
 	options: [],
 };
 
-const PACKAGE_JSON = '{ "name": "warren", "version": "1.2.3" }';
+const PACKAGE_JSON = '{ "name": "warren", "version": "1.2.3", "license": "MIT" }';
 const OPENAPI = "openapi: 3.1.0\npaths:\n  /runs: {}\n  /runs/{id}: {}\n";
 const DOCKERFILE = "RUN npm i -g \\\n    @os-eco/burrow-cli@0.3.15 \\\n    other\n";
+
+const ENV_EXAMPLE = [
+	"# Bearer token guarding every route.",
+	"WARREN_API_TOKEN=",
+	"# WARREN_DB_URL=postgres://…",
+	"#WARREN_LOG_LEVEL=info",
+	"ANTHROPIC_API_KEY=",
+	"",
+].join("\n");
+
+const K8S_DEPLOYMENT = [
+	"spec:",
+	"  containers:",
+	"    - name: warren",
+	"      env:",
+	"        - name: WARREN_RUNTIME",
+	'          value: "k8s"',
+	"        - name: WARREN_API_TOKEN",
+	"",
+].join("\n");
 
 /** The two blocks `scripts/upstream/tokens.ts` lifts; that module has its own suite. */
 const THEME_CSS = [
@@ -81,11 +104,31 @@ describe("facts", () => {
 		expect(extractBurrowPin(DOCKERFILE)).toBe("0.3.15");
 	});
 
+	test("reads the SPDX license identifier", () => {
+		expect(extractLicense(PACKAGE_JSON)).toBe("MIT");
+	});
+
+	test("collects env keys from .env.example, commented or not", () => {
+		expect(parseEnvExampleKeys(ENV_EXAMPLE)).toEqual([
+			"ANTHROPIC_API_KEY",
+			"WARREN_API_TOKEN",
+			"WARREN_DB_URL",
+			"WARREN_LOG_LEVEL",
+		]);
+	});
+
+	test("collects env names from the k8s deployment manifest", () => {
+		expect(parseK8sEnvNames(K8S_DEPLOYMENT)).toEqual(["WARREN_API_TOKEN", "WARREN_RUNTIME"]);
+	});
+
 	test.each([
 		["a missing version", () => extractVersion("{}")],
+		["a missing license", () => extractLicense('{ "version": "1.0.0" }')],
 		["a schema with no paths", () => countOpenApiPaths("openapi: 3.1.0\n")],
 		["an empty paths map", () => countOpenApiPaths("paths: {}\n")],
 		["a Dockerfile with no pin", () => extractBurrowPin("FROM oven/bun\n")],
+		["an .env.example with no keys", () => parseEnvExampleKeys("# only comments\n")],
+		["a deployment with no env list", () => parseK8sEnvNames("spec: {}\n")],
 	])("fails loudly on %s", (_label, run) => {
 		expect(run).toThrow(/could not extract/);
 	});
@@ -96,15 +139,26 @@ describe("facts", () => {
 			packageJson: PACKAGE_JSON,
 			openapiYaml: OPENAPI,
 			dockerfile: DOCKERFILE,
+			envExample: ENV_EXAMPLE,
+			k8sDeployment: K8S_DEPLOYMENT,
 			commands: [LEAF],
 		});
 		expect(facts).toMatchObject({
 			ref: "v9.9.9",
 			version: "1.2.3",
+			license: "MIT",
 			httpPathCount: 2,
 			burrowCliPin: "0.3.15",
 			cliCommandCount: 1,
 			cliCommands: ["plan list"],
+			// The union is sorted and de-duplicated across both sources.
+			envVars: [
+				"ANTHROPIC_API_KEY",
+				"WARREN_API_TOKEN",
+				"WARREN_DB_URL",
+				"WARREN_LOG_LEVEL",
+				"WARREN_RUNTIME",
+			],
 		});
 		const rendered = renderFacts(facts);
 		expect(rendered.endsWith("\n")).toBe(true);
@@ -120,6 +174,8 @@ function sourcesFor(docs: ReadonlyMap<string, string>): UpstreamSources {
 		packageJson: PACKAGE_JSON,
 		openapi: OPENAPI,
 		dockerfile: DOCKERFILE,
+		envExample: ENV_EXAMPLE,
+		k8sDeployment: K8S_DEPLOYMENT,
 		themeCss: THEME_CSS,
 	};
 }

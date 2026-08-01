@@ -21,12 +21,50 @@ function fail(what: string): never {
 	throw new Error(`sync:upstream: could not extract ${what} from the upstream checkout`);
 }
 
-/** `version` from warren's root `package.json`. */
-export function extractVersion(packageJson: string): string {
+/** A non-empty string field from warren's root `package.json`. */
+function packageField(packageJson: string, field: string): string {
 	const parsed: unknown = JSON.parse(packageJson);
 	if (typeof parsed !== "object" || parsed === null) fail("the package.json object");
-	const version = (parsed as Record<string, unknown>).version;
-	return typeof version === "string" && version !== "" ? version : fail("package.json version");
+	const value = (parsed as Record<string, unknown>)[field];
+	return typeof value === "string" && value !== "" ? value : fail(`package.json ${field}`);
+}
+
+/** `version` from warren's root `package.json`. */
+export function extractVersion(packageJson: string): string {
+	return packageField(packageJson, "version");
+}
+
+/** `license` from warren's root `package.json` — the SPDX identifier, not prose. */
+export function extractLicense(packageJson: string): string {
+	return packageField(packageJson, "license");
+}
+
+/**
+ * Every environment variable warren's `.env.example` documents, active or
+ * commented out. The commented entries are the optional knobs, so they
+ * count: the file's key set is the operator-facing configuration surface.
+ */
+export function parseEnvExampleKeys(envExample: string): string[] {
+	const keys = new Set<string>();
+	for (const line of envExample.split("\n")) {
+		const key = line.match(/^#?\s*([A-Z][A-Z0-9_]*)=/)?.[1];
+		if (key !== undefined) keys.add(key);
+	}
+	return keys.size > 0 ? [...keys].sort() : fail("any keys from .env.example");
+}
+
+/**
+ * The `env[].name` entries of warren's Kubernetes deployment manifest.
+ * This is where k8s-topology variables such as `WARREN_RUNTIME` live —
+ * `.env.example` documents the docker-compose topology and omits them.
+ */
+export function parseK8sEnvNames(deploymentYaml: string): string[] {
+	const names = new Set<string>();
+	for (const match of deploymentYaml.matchAll(/^\s*-\s*name:\s*([A-Z][A-Z0-9_]*)\s*$/gm)) {
+		const name = match[1];
+		if (name !== undefined) names.add(name);
+	}
+	return names.size > 0 ? [...names].sort() : fail("any env names from the k8s deployment");
 }
 
 /**
@@ -55,6 +93,8 @@ export type FactsInput = {
 	readonly packageJson: string;
 	readonly openapiYaml: string;
 	readonly dockerfile: string;
+	readonly envExample: string;
+	readonly k8sDeployment: string;
 	readonly commands: readonly CliCommand[];
 };
 
@@ -62,24 +102,35 @@ export type UpstreamFacts = {
 	readonly _generated: string;
 	readonly ref: string;
 	readonly version: string;
+	readonly license: string;
 	readonly httpPathCount: number;
 	readonly burrowCliPin: string;
 	readonly cliCommandCount: number;
 	readonly cliCommands: readonly string[];
+	/** Union of `.env.example` keys and the k8s deployment's env names. */
+	readonly envVars: readonly string[];
 };
 
 /** Build the fact set. Deterministic: no timestamps, no host-dependent values. */
 export function buildFacts(input: FactsInput): UpstreamFacts {
+	const envVars = [
+		...new Set([
+			...parseEnvExampleKeys(input.envExample),
+			...parseK8sEnvNames(input.k8sDeployment),
+		]),
+	].sort();
 	return {
 		_generated:
 			"Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. " +
 			"Do not edit — every value is extracted mechanically from an upstream artifact.",
 		ref: input.ref,
 		version: extractVersion(input.packageJson),
+		license: extractLicense(input.packageJson),
 		httpPathCount: countOpenApiPaths(input.openapiYaml),
 		burrowCliPin: extractBurrowPin(input.dockerfile),
 		cliCommandCount: input.commands.length,
 		cliCommands: input.commands.map((command) => command.path),
+		envVars,
 	};
 }
 
