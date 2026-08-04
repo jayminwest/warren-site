@@ -1,0 +1,17 @@
+# .warren/config.yaml — per-project warren defaults (warren-5840 layout).
+#
+# All fields are optional. Schema: DefaultsConfigSchema in warren's
+# src/warren-config/schema.ts; see warren's docs/design/warren-config.md.
+#
+# Precedence at spawn time: operator override (per-run) > project default
+# (this file) > agent frontmatter > built-in.
+
+defaultRole: claude-code
+defaultBranch: main
+
+# Full run branch is <runBranchPrefix>/<run.id> (e.g. warren/run_abc123).
+runBranchPrefix: warren
+
+# Canonical green-tree command, surfaced to agents via $WARREN_QUALITY_GATE.
+# Mirrors CI (.github/workflows/ci.yml runs the same manifest gates).
+qualityGate: bun run check:all

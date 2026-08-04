@@ -1,0 +1,15 @@
+# .warren/triggers.yaml — scheduled runs for this project (R-06).
+#
+# Each entry is a cron-style trigger. Warren ticks once a minute and
+# spawns a run when a trigger is due. See docs/design/scheduler.md for the contract.
+#
+# Example:
+# - id: nightly-housekeeping
+#   kind: cron
+#   cron: '0 3 * * *'      # 03:00 daily (5 or 6 whitespace-separated fields)
+#   seed: warren-housekeep # seed id the agent reads + writes
+#   role: claude-code      # registered agent name
+#   timezone: UTC          # optional; default UTC
+#   prompt: |              # optional; pre-filled into the agent
+#     Run the housekeeping checklist.
+[]
