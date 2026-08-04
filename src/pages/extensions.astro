@@ -1,0 +1,176 @@
+---
+/**
+ * `/extensions` — the public extension catalog.
+ *
+ * LAYOUT ONLY — no copy lives in this file. Every headline, label, and
+ * paragraph comes from `content/extensions.md`, which the prose guard
+ * (`bun run check:prose`) lints at zero violations. Catalog entries are
+ * structured frontmatter on the same file: a hand-curated allowlist,
+ * by design. Discovery-by-convention (a crawled GitHub topic) is a
+ * later phase that starts only when entry volume justifies it — see
+ * `docs/design/extensions.md` in the warren repository.
+ *
+ * Constraints this page must keep: zero client JavaScript, and no
+ * color, font, radius, or shadow that is not a vendored warren token.
+ */
+import { Content as IntroBody, frontmatter as meta } from "../../content/extensions.md";
+import BaseLayout from "../components/BaseLayout.astro";
+
+/** A catalog entry, as authored in the content file's frontmatter. */
+interface Entry {
+	name: string;
+	kind: string;
+	status: string;
+	summary: string;
+	href: string;
+}
+
+/** A labeled link, as authored in frontmatter. */
+interface Cta {
+	label: string;
+	href: string;
+}
+
+const page = meta as {
+	eyebrow: string;
+	heading: string;
+	title: string;
+	description: string;
+	entries: Entry[];
+	designDoc: Cta;
+	propose: Cta;
+};
+---
+
+<BaseLayout title={page.title} description={page.description}>
+	<section class="shell head">
+		<p class="eyebrow">{page.eyebrow}</p>
+		<h1>{page.heading}</h1>
+		<div class="intro"><IntroBody /></div>
+	</section>
+
+	<section class="shell catalog">
+		<ul class="entries">
+			{
+				page.entries.map((entry) => (
+					<li class="entry">
+						<div class="entry-head">
+							<span class="kind">{entry.kind}</span>
+							<span class="status">{entry.status}</span>
+						</div>
+						<h2>
+							<a href={entry.href} rel="noopener noreferrer">
+								{entry.name}
+							</a>
+						</h2>
+						<p>{entry.summary}</p>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<section class="shell links">
+		<a href={page.designDoc.href} rel="noopener noreferrer">{page.designDoc.label}</a>
+		<a href={page.propose.href} rel="noopener noreferrer">{page.propose.label}</a>
+	</section>
+</BaseLayout>
+
+<style>
+	.head {
+		padding-block: 4rem 1rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.5rem;
+		color: var(--color-muted-foreground);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		font-weight: 650;
+		letter-spacing: -0.02em;
+	}
+
+	.intro {
+		max-width: 46rem;
+		margin-top: 0.75rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.intro :global(p) {
+		margin: 0.75rem 0 0;
+	}
+
+	.catalog {
+		padding-block: 1.5rem 0;
+	}
+
+	.entries {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.entry {
+		padding: 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg, 0.5rem);
+		background-color: var(--color-card, var(--color-bg));
+	}
+
+	.entry-head {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.kind,
+	.status {
+		padding: 0.125rem 0.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		font-size: 0.75rem;
+		color: var(--color-muted-foreground);
+	}
+
+	.entry h2 {
+		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 600;
+	}
+
+	.entry h2 a {
+		color: var(--color-fg);
+		text-decoration: none;
+	}
+
+	.entry h2 a:hover {
+		text-decoration: underline;
+	}
+
+	.entry p {
+		margin: 0.5rem 0 0;
+		color: var(--color-muted-foreground);
+		font-size: 0.9375rem;
+	}
+
+	.links {
+		display: flex;
+		gap: 1.5rem;
+		padding-block: 2rem 4rem;
+	}
+
+	.links a {
+		color: var(--color-fg);
+		font-size: 0.9375rem;
+	}
+</style>
