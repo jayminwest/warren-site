@@ -39,13 +39,15 @@ bun run verify           # every quality gate, the agent-facing entry point
 
 Two gates deserve a note.
 
-`check:bundle-size` holds the landing page and the changelog page at zero scripts. The budget for those two routes locks to zero, and a re-baseline cannot raise it without an explicit environment override. A change that puts JavaScript back on the landing page fails the build. The same gate runs an accessibility audit over every built page and fails on serious or critical axe violations.
+`check:bundle-size` holds the landing page and the changelog page to the analytics tags in `src/config/analytics.ts` and nothing more. The per-route budget counts those scripts, and a re-baseline cannot raise a locked budget without an explicit environment override. A change that puts more JavaScript on the landing page fails the build. The same gate runs an accessibility audit over every built page and fails on serious or critical axe violations.
 
 `check:prose` runs inside `lint`. It enforces a machine-checkable subset of ASD-STE100 Simplified Technical English over `content/**/*.md` and this file, at zero violations with nothing grandfathered. The rules ban marketing adjectives, passive voice, sentences over 25 words, and contractions. Plain technical language is the house voice, and this gate holds the line.
 
 ## Deployment
 
 Vercel builds and serves the site. `vercel.json` sets the build command to `bun run sync:upstream && bun run build`.
+
+Analytics run from two sources. The Vercel Web Analytics script ships on every page and reports when you turn on Web Analytics in the Vercel project. The Google tag renders only when the build sees `PUBLIC_GTAG_ID`. When `PUBLIC_GTAG_SEND_TO` names a conversion action, the tag also reports a conversion on each outbound click to the warren repository. Set both variables in the Vercel project, not in this repository.
 
 The sync step has to run first. The generator writes the SDK reference into `src/content/docs/docs/sdk/`, and `.gitignore` covers that directory. A build without the sync step publishes the site with `/docs/sdk/` missing.
 

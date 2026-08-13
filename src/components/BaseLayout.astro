@@ -3,14 +3,24 @@
  * Shell for the pages that live OUTSIDE Starlight's chrome — the landing
  * page and `/changelog`.
  *
- * Ships no client JavaScript. That is a hard constraint, not a default:
- * every page built on this layout must stay static HTML + CSS. It also
- * means there is no theme toggle here, so the vendored tokens follow the
- * OS preference through the `:root:not([data-theme])` block in
- * `starlight-overrides.css`.
+ * Ships no client JavaScript except the analytics tags from
+ * `src/config/analytics.ts` — the one sanctioned exception, added
+ * 2026-08-13 for ad-campaign measurement. Everything else stays static
+ * HTML + CSS: no hydration islands, no prefetch runtime, no theme toggle,
+ * so the vendored tokens follow the OS preference through the
+ * `:root:not([data-theme])` block in `starlight-overrides.css`. The
+ * per-route budgets in `budgets/bundle-size-budgets.json` enforce exactly
+ * this shape.
  */
 import "../styles/warren-theme.css";
 import "../styles/starlight-overrides.css";
+import {
+	GTAG_ID,
+	GTAG_SEND_TO,
+	gtagBootstrap,
+	gtagLoaderSrc,
+	VERCEL_INSIGHTS_SRC,
+} from "../config/analytics";
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
 
@@ -56,6 +66,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://warren.run"
 		*/}
 		<meta property="og:image" content={new URL("/logo.png", canonical).href} />
 		<meta name="twitter:card" content="summary_large_image" />
+		{/* Analytics — see the header of src/config/analytics.ts. */}
+		<script is:inline defer src={VERCEL_INSIGHTS_SRC}></script>
+		{
+			GTAG_ID && (
+				<>
+					<script is:inline async src={gtagLoaderSrc(GTAG_ID)} />
+					<script is:inline set:html={gtagBootstrap(GTAG_ID, GTAG_SEND_TO)} />
+				</>
+			)
+		}
 	</head>
 	<body>
 		<a class="skip-link" href="#main">Skip to content</a>
