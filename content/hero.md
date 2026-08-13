@@ -1,7 +1,7 @@
 ---
 eyebrow: "Open source · self-hosted · MIT"
 headline: "Coolify for coding agents"
-title: "Warren — self-hostable control plane for coding agents"
+title: "Warren: self-hostable control plane for coding agents"
 description: "Run coding agents on your own infrastructure. Point warren at a GitHub repository, pick an agent, get a pull request."
 demoCta:
   label: "Watch it live"
@@ -15,6 +15,6 @@ secondaryCta:
   href: "/docs/quickstart/"
 ---
 
-Point warren at a GitHub repository, pick an agent, and get a pull request — on your own infrastructure, under your own API keys.
+Point warren at a GitHub repository, pick an agent, and get a pull request, on your own infrastructure and under your own API keys.
 
 One container, one volume, one HTTP API, one UI.
