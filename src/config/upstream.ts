@@ -17,7 +17,7 @@ export const UPSTREAM = {
 	owner: "jayminwest",
 	repo: "warren",
 	/** Release tag the docs are built from. Bump to publish new docs. */
-	ref: "v0.14.0",
+	ref: "v0.15.0",
 } as const;
 
 /** Raw file base for the pinned ref, e.g. `<base>/README.md`. */

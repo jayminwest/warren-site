@@ -1,9 +1,9 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.14.0",
-	"version": "0.14.0",
+	"ref": "v0.15.0",
+	"version": "0.15.0",
 	"license": "MIT",
-	"httpPathCount": 36,
+	"httpPathCount": 39,
 	"burrowCliPin": "0.3.15",
 	"cliCommandCount": 14,
 	"cliCommands": [
@@ -58,6 +58,10 @@
 		"WARREN_DB_URL",
 		"WARREN_DISABLE_UI",
 		"WARREN_EVENT_STREAM_MAX_LIFETIME",
+		"WARREN_FORGE",
+		"WARREN_GITHUB_APP_ID",
+		"WARREN_GITHUB_APP_INSTALLATION_ID",
+		"WARREN_GITHUB_APP_PRIVATE_KEY",
 		"WARREN_GIT_AUTHOR_EMAIL",
 		"WARREN_GIT_AUTHOR_NAME",
 		"WARREN_GIT_BINARY",

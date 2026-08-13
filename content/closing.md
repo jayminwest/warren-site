@@ -1,8 +1,8 @@
 ---
 heading: "Point it at a repository and see what comes back"
 cta:
-  label: "Start with the quickstart"
-  href: "/docs/quickstart/"
+  label: "Star warren on GitHub"
+  href: "https://github.com/jayminwest/warren"
 ---
 
-Warren runs on GKE in continuous use against real GitHub repositories. An acceptance harness drives the whole path against a live stack: dispatch, sandbox, steer, reap, pull request.
+Warren runs in production every day, against real GitHub repositories. Watch the live instance at app.warren.run, then run your own.

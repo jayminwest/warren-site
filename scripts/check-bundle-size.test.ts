@@ -371,10 +371,18 @@ describe("committed budget file", () => {
 		expect(() => parseBudgets(doc)).not.toThrow();
 	});
 
-	test("pins the standalone routes at zero JS", () => {
+	test("holds the standalone routes to the analytics tags only", () => {
+		// Relaxed from zero on 2026-08-13 for ad-campaign measurement: the
+		// Vercel insights loader plus the two Google-tag scripts, and nothing
+		// else. See $comment_routes in the budget file and
+		// src/config/analytics.ts. Ceilings = 3 sanctioned tags + --update
+		// headroom; a hydration island or prefetch runtime must still trip.
 		const parsed = parseBudgets(doc);
-		expect(parsed.routes["index.html"]).toEqual({ scripts: 0, raw: 0 });
-		expect(parsed.routes["changelog/index.html"]).toEqual({ scripts: 0, raw: 0 });
+		for (const route of ["index.html", "changelog/index.html"]) {
+			const budget = parsed.routes[route];
+			expect(budget?.scripts).toBeLessThanOrEqual(5);
+			expect(budget?.raw).toBeLessThanOrEqual(2048);
+		}
 	});
 
 	test("keeps the docs routeDefault looser than the pinned landing routes", () => {

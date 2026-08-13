@@ -9,7 +9,30 @@ import starlightLlmsTxt from "starlight-llms-txt";
 import starlightOpenAPI, { createOpenAPISidebarGroup } from "starlight-openapi";
 import { createStarlightTypeDocPlugin } from "starlight-typedoc";
 
+import {
+	GTAG_ID,
+	GTAG_SEND_TO,
+	gtagBootstrap,
+	gtagLoaderSrc,
+	VERCEL_INSIGHTS_SRC,
+} from "./src/config/analytics.ts";
 import { BLOB_BASE, OPENAPI_URL, UPSTREAM } from "./src/config/upstream.ts";
+
+/**
+ * Analytics tags for the docs routes — the same list `BaseLayout.astro`
+ * renders on the standalone pages, injected here through Starlight's
+ * `head` option. See the header of `src/config/analytics.ts`.
+ * @type {import('@astrojs/starlight/types').StarlightUserConfig['head']}
+ */
+const analyticsHead = [
+	{ tag: "script", attrs: { defer: true, src: VERCEL_INSIGHTS_SRC } },
+	...(GTAG_ID
+		? [
+				{ tag: "script", attrs: { async: true, src: gtagLoaderSrc(GTAG_ID) } },
+				{ tag: "script", content: gtagBootstrap(GTAG_ID, GTAG_SEND_TO) },
+			]
+		: []),
+];
 
 const root = new URL("./", import.meta.url);
 
@@ -114,8 +137,9 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: "Warren",
+			head: analyticsHead,
 			description:
-				"Self-hostable control plane for ephemeral cloud agents. Point it at a repo, pick an agent, get a pull request.",
+				"Self-hostable control plane for coding agents. Point it at a repository, pick an agent, get a pull request.",
 			/**
 			 * No `logo` here on purpose. That option takes an image path, and
 			 * the lockup is now an inline SVG so it can be transparent and
@@ -173,7 +197,7 @@ export default defineConfig({
 				starlightLlmsTxt({
 					projectName: "Warren",
 					description:
-						"Warren is a self-hostable control plane for ephemeral cloud agents. It clones a GitHub repository, runs a coding agent inside a sandbox, streams the run back to an HTTP API and UI, and pushes the resulting branch as a pull request.",
+						"Warren is a self-hostable control plane for coding agents. It clones a GitHub repository, runs a coding agent inside a sandbox, streams the run back to an HTTP API and UI, and pushes the resulting branch as a pull request.",
 					details: [
 						"Notes for models reading these docs:",
 						"",
