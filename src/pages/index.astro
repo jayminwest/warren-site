@@ -34,6 +34,7 @@ import {
 import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
 import BaseLayout from "../components/BaseLayout.astro";
 import FeatureCard from "../components/FeatureCard.astro";
+import GitHubMark from "../components/GitHubMark.astro";
 import Pipeline, { type Step } from "../components/Pipeline.astro";
 import RunPanel, { type EventRow } from "../components/RunPanel.astro";
 import facts from "../config/facts.generated.json";
@@ -46,6 +47,19 @@ interface Cta {
 
 /** The live read-only instance, linked from the hero and the run panel. */
 const DEMO_URL = "https://app.warren.run";
+
+/**
+ * A CTA that leads to the warren repository carries the GitHub mark, so
+ * a reader scanning the page sees where the button goes before reading
+ * it. Driven by the href, not a frontmatter flag — the copy files decide
+ * where a button points, and the mark follows.
+ */
+const isRepoLink = (href: string): boolean =>
+	href.startsWith("https://github.com/jayminwest/warren");
+
+/** External links leave the site, so they carry the usual rel guard. */
+const relFor = (href: string): string | undefined =>
+	href.startsWith("http") ? "noopener noreferrer" : undefined;
 
 const hero = heroMeta as {
 	eyebrow: string;
@@ -117,12 +131,16 @@ const runEvents = [
 				<span class="demo-note">{hero.demoCta.note}</span>
 			</a>
 			<div class="ctas">
-				<a class="cta primary" href={hero.primaryCta.href}>{hero.primaryCta.label}</a>
+				<a class="cta primary" href={hero.primaryCta.href} rel={relFor(hero.primaryCta.href)}>
+					{isRepoLink(hero.primaryCta.href) && <GitHubMark />}
+					{hero.primaryCta.label}
+				</a>
 				<a
 					class="cta secondary"
 					href={hero.secondaryCta.href}
-					rel="noopener noreferrer"
+					rel={relFor(hero.secondaryCta.href)}
 				>
+					{isRepoLink(hero.secondaryCta.href) && <GitHubMark />}
 					{hero.secondaryCta.label}
 				</a>
 			</div>
@@ -173,7 +191,10 @@ const runEvents = [
 	<section class="shell closing" aria-labelledby="closing">
 		<h2 id="closing">{closing.heading}</h2>
 		<div class="prose"><ClosingBody /></div>
-		<a class="cta primary" href={closing.cta.href}>{closing.cta.label}</a>
+		<a class="cta primary" href={closing.cta.href} rel={relFor(closing.cta.href)}>
+			{isRepoLink(closing.cta.href) && <GitHubMark />}
+			{closing.cta.label}
+		</a>
 	</section>
 </BaseLayout>
 
@@ -277,6 +298,7 @@ const runEvents = [
 	.cta {
 		display: inline-flex;
 		align-items: center;
+		gap: 0.5rem;
 		padding: 0.625rem 1.25rem;
 		border: 1px solid transparent;
 		border-radius: var(--radius-md);
