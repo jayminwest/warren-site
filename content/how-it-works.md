@@ -7,7 +7,7 @@ steps:
     body: "Give warren a GitHub URL. Warren clones it onto its own volume."
   - stage: "Dispatch"
     title: "Pick an agent, write a prompt"
-    body: "The claude-code, sapling, and pi agents ship in the image. Add your own agents from a prompt library."
+    body: "The claude-code, sapling, and pi agents ship in the image. Five more built-in agents plan, triage, and repair."
   - stage: "Run"
     title: "Watch and steer"
     body: "The agent works in a sandbox while every event streams to your browser. Send a message mid-run and the agent reads it on its next turn."

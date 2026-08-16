@@ -2,8 +2,8 @@
 /*
  * GENERATED — DO NOT HAND-EDIT. Run `bun run sync:upstream`.
  *
- * Source: jayminwest/warren `src/ui/src/index.css` @ ref `v0.15.0`
- *         (the `@theme { … }` block starting at line 42, plus the
+ * Source: jayminwest/warren `src/ui/src/tokens.css` @ ref `v0.16.0`
+ *         (the `@theme { … }` block starting at line 15, plus the
  *         `:root[data-theme="dark"]` override block that follows it).
  *
  * This file is the warren app's design-token set, derived so the
@@ -20,9 +20,10 @@
  * Tailwind: the wrapper `@theme {` becomes `:root {`. Tailwind's `@theme`
  * emits its contents as `:root` custom properties, so the two are
  * equivalent here; every declaration inside is byte-identical to upstream.
- * Upstream's Tailwind import line, its `@custom-variant dark` declaration,
- * and its base-element rules are intentionally NOT copied. (Spelling that
- * import out literally here would make knip read it as a real dependency.)
+ * Upstream keeps its Tailwind import line, its `@custom-variant dark`
+ * declaration, and its base-element rules in `index.css`, and none of that
+ * is copied here. (Spelling that import out literally here would make knip
+ * read it as a real dependency.)
  *
  * Theme keying (upstream semantics, preserved): light tokens live on bare
  * `:root`, dark tokens on `:root[data-theme="dark"]`.
