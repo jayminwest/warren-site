@@ -2,11 +2,14 @@
  * Tests for the design-token extractor behind `bun run sync:upstream`.
  *
  * Nothing here reads `.upstream/`, spawns git, or touches the network. The
- * fixture below mirrors the SHAPE of warren's `src/ui/src/index.css` — the
- * Tailwind import, the font faces, the `@custom-variant`, the `@theme` block,
- * the commented dark overrides, and the base-element rules — with short token
+ * fixture below mirrors the SHAPE of warren's stylesheet — the Tailwind
+ * import, the font faces, the `@custom-variant`, the `@theme` block, the
+ * commented dark overrides, and the base-element rules — with short token
  * values, so each assertion states one property of the transform rather than
- * restating upstream's palette.
+ * restating upstream's palette. Since warren-ac7b the token blocks live in
+ * `src/ui/src/tokens.css` and the rest stays in `index.css`; the fixture
+ * keeps both shapes in one string to prove the extractor skips non-token
+ * rules wherever they sit.
  */
 
 import { describe, expect, test } from "bun:test";
@@ -156,7 +159,7 @@ describe("rewriteThemeWrapper", () => {
 describe("renderHeader", () => {
 	test("names the ref, the upstream path, and the derived start line", () => {
 		const header = renderHeader({ ...OPTIONS }, 42);
-		expect(header).toContain("Source: jayminwest/warren `src/ui/src/index.css`");
+		expect(header).toContain("Source: jayminwest/warren `src/ui/src/tokens.css`");
 		expect(header).toContain("@ ref `v9.9.9`");
 		expect(header).toContain("block starting at line 42");
 	});

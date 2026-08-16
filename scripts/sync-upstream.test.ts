@@ -214,7 +214,7 @@ describe("planOutputs", () => {
 		expect(byPath.get(FACTS_OUT_PATH)).toContain(`"ref": "${UPSTREAM.ref}"`);
 	});
 
-	test("renders the token stylesheet from warren's index.css at the pinned ref", () => {
+	test("renders the token stylesheet from warren's tokens.css at the pinned ref", () => {
 		const css = byPath.get(THEME_OUT_PATH) ?? "";
 		expect(css).toContain(`@ ref \`${UPSTREAM.ref}\``);
 		expect(css).toContain(":root {\n\t--color-bg: oklch(99% 0.003 264);\n}");

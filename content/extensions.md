@@ -6,9 +6,14 @@ description: "Extensions observe warren runs from outside the server process. Br
 entries:
   - name: "audit-log"
     kind: "Observer"
-    status: "In development"
+    status: "Shipped"
     summary: "An append-only audit trail of run activity. It records each dispatch, each state change, and each pushed branch. It exports the trail as JSON lines."
     href: "https://github.com/jayminwest/warren/tree/main/extensions/audit-log"
+  - name: "judge"
+    kind: "Observer"
+    status: "Shipped"
+    summary: "An LLM judge for finished runs. It scores each run against a 15-class behavioral rubric, stores every verdict append-only, and exports the verdicts as JSON lines."
+    href: "https://github.com/jayminwest/warren/tree/main/extensions/judge"
 designDoc:
   label: "Read the design record"
   href: "https://github.com/jayminwest/warren/blob/main/docs/design/extensions.md"

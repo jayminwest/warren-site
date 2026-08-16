@@ -63,7 +63,7 @@ export type UpstreamSources = {
 	readonly dockerfile: string;
 	readonly envExample: string;
 	readonly k8sDeployment: string;
-	/** Raw text of warren's `src/ui/src/index.css`, source of the design tokens. */
+	/** Raw text of warren's `src/ui/src/tokens.css`, source of the design tokens. */
 	readonly themeCss: string;
 };
 

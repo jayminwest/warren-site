@@ -11,7 +11,8 @@
  * network, no checkout — so the whole module is unit-testable. The impure
  * shell lives in `scripts/sync-upstream.ts`.
  *
- * Two blocks are lifted out of warren's `src/ui/src/index.css`:
+ * Two blocks are lifted out of warren's `src/ui/src/tokens.css` (split out of
+ * `index.css` upstream in warren-ac7b, at v0.16.0):
  *
  * 1. `@theme { … }` — Tailwind's token block, rewritten to `:root { … }`.
  *    Tailwind emits an `@theme` block's contents as `:root` custom
@@ -22,12 +23,13 @@
  * Deliberately NOT copied, and asserted by the tests: upstream's
  * `@import "tailwindcss"` line, its `@font-face` rules, its
  * `@custom-variant dark` declaration, and its base-element rules
- * (`html, body`, `*`, the tabular-numerals rule). Those are app concerns; the
- * site declares its own.
+ * (`html, body`, `*`, the tabular-numerals rule). Upstream keeps those in
+ * `index.css`, outside the token file, and the extractor skips them even if
+ * they move back in. Those are app concerns; the site declares its own.
  */
 
 /** Upstream path of the stylesheet the tokens are lifted from. */
-export const TOKENS_SOURCE = "src/ui/src/index.css";
+export const TOKENS_SOURCE = "src/ui/src/tokens.css";
 
 /** Repo-relative path of the file this module generates. */
 export const TOKENS_OUT_PATH = "src/styles/warren-theme.css";
@@ -182,9 +184,10 @@ export function renderHeader(options: ThemeCssOptions, themeStartLine: number): 
  * Tailwind: the wrapper \`@theme {\` becomes \`:root {\`. Tailwind's \`@theme\`
  * emits its contents as \`:root\` custom properties, so the two are
  * equivalent here; every declaration inside is byte-identical to upstream.
- * Upstream's Tailwind import line, its \`@custom-variant dark\` declaration,
- * and its base-element rules are intentionally NOT copied. (Spelling that
- * import out literally here would make knip read it as a real dependency.)
+ * Upstream keeps its Tailwind import line, its \`@custom-variant dark\`
+ * declaration, and its base-element rules in \`index.css\`, and none of that
+ * is copied here. (Spelling that import out literally here would make knip
+ * read it as a real dependency.)
  *
  * Theme keying (upstream semantics, preserved): light tokens live on bare
  * \`:root\`, dark tokens on \`:root[data-theme="dark"]\`.

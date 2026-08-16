@@ -1,9 +1,9 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.15.0",
-	"version": "0.15.0",
+	"ref": "v0.16.0",
+	"version": "0.16.0",
 	"license": "MIT",
-	"httpPathCount": 39,
+	"httpPathCount": 40,
 	"burrowCliPin": "0.3.15",
 	"cliCommandCount": 14,
 	"cliCommands": [
