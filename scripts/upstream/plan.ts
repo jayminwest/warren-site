@@ -36,7 +36,6 @@ export const EXTRA_SOURCES = {
 	cliMain: CLI_SOURCE,
 	packageJson: "package.json",
 	openapi: "docs/openapi.yaml",
-	dockerfile: "Dockerfile",
 	envExample: ".env.example",
 	k8sDeployment: "deploy/k8s/base/deployment.yaml",
 	themeCss: TOKENS_SOURCE,
@@ -60,7 +59,6 @@ export type UpstreamSources = {
 	readonly cliMain: string;
 	readonly packageJson: string;
 	readonly openapi: string;
-	readonly dockerfile: string;
 	readonly envExample: string;
 	readonly k8sDeployment: string;
 	/** Raw text of warren's `src/ui/src/tokens.css`, source of the design tokens. */
@@ -202,7 +200,6 @@ export function planOutputs(sources: UpstreamSources): GeneratedFile[] {
 				ref: UPSTREAM.ref,
 				packageJson: sources.packageJson,
 				openapiYaml: sources.openapi,
-				dockerfile: sources.dockerfile,
 				envExample: sources.envExample,
 				k8sDeployment: sources.k8sDeployment,
 				commands,
