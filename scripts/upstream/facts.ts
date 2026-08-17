@@ -2,8 +2,7 @@
  * Mechanically extractable facts about the pinned upstream release.
  *
  * Everything here is parsed from a machine-readable artifact — a JSON field,
- * a YAML key set, a pinned version in a `Dockerfile`, the CLI's own command
- * chains. Nothing is read out of prose and nothing is inferred, because the
+ * a YAML key set, the CLI's own command chains. Nothing is read out of prose and nothing is inferred, because the
  * landing page cites this file as ground truth: a number it prints has to be
  * a number the product actually reports. If a claim cannot be extracted this
  * way, it does not belong in `facts.generated.json`.
@@ -13,9 +12,6 @@
 
 import { parse as parseYaml } from "yaml";
 import type { CliCommand } from "./cli.ts";
-
-/** `@os-eco/burrow-cli@0.3.15` in the Dockerfile's global install. */
-const BURROW_PIN = /@os-eco\/burrow-cli@(\d[^\s\\"']*)/;
 
 function fail(what: string): never {
 	throw new Error(`sync:upstream: could not extract ${what} from the upstream checkout`);
@@ -83,16 +79,10 @@ export function countOpenApiPaths(openapiYaml: string): number {
 	return count > 0 ? count : fail("a non-empty OpenAPI `paths` map");
 }
 
-/** The `@os-eco/burrow-cli` version the container image installs. */
-export function extractBurrowPin(dockerfile: string): string {
-	return dockerfile.match(BURROW_PIN)?.[1] ?? fail("the @os-eco/burrow-cli pin");
-}
-
 export type FactsInput = {
 	readonly ref: string;
 	readonly packageJson: string;
 	readonly openapiYaml: string;
-	readonly dockerfile: string;
 	readonly envExample: string;
 	readonly k8sDeployment: string;
 	readonly commands: readonly CliCommand[];
@@ -104,7 +94,6 @@ export type UpstreamFacts = {
 	readonly version: string;
 	readonly license: string;
 	readonly httpPathCount: number;
-	readonly burrowCliPin: string;
 	readonly cliCommandCount: number;
 	readonly cliCommands: readonly string[];
 	/** Union of `.env.example` keys and the k8s deployment's env names. */
@@ -127,7 +116,6 @@ export function buildFacts(input: FactsInput): UpstreamFacts {
 		version: extractVersion(input.packageJson),
 		license: extractLicense(input.packageJson),
 		httpPathCount: countOpenApiPaths(input.openapiYaml),
-		burrowCliPin: extractBurrowPin(input.dockerfile),
 		cliCommandCount: input.commands.length,
 		cliCommands: input.commands.map((command) => command.path),
 		envVars,

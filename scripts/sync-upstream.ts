@@ -118,7 +118,6 @@ function readSources(): UpstreamSources {
 		cliMain: readCheckoutFile(EXTRA_SOURCES.cliMain),
 		packageJson: readCheckoutFile(EXTRA_SOURCES.packageJson),
 		openapi: readCheckoutFile(EXTRA_SOURCES.openapi),
-		dockerfile: readCheckoutFile(EXTRA_SOURCES.dockerfile),
 		envExample: readCheckoutFile(EXTRA_SOURCES.envExample),
 		k8sDeployment: readCheckoutFile(EXTRA_SOURCES.k8sDeployment),
 		themeCss: readCheckoutFile(EXTRA_SOURCES.themeCss),

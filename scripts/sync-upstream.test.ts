@@ -12,7 +12,6 @@ import type { CliCommand } from "./upstream/cli.ts";
 import {
 	buildFacts,
 	countOpenApiPaths,
-	extractBurrowPin,
 	extractLicense,
 	extractVersion,
 	parseEnvExampleKeys,
@@ -55,7 +54,6 @@ const LEAF: CliCommand = {
 
 const PACKAGE_JSON = '{ "name": "warren", "version": "1.2.3", "license": "MIT" }';
 const OPENAPI = "openapi: 3.1.0\npaths:\n  /runs: {}\n  /runs/{id}: {}\n";
-const DOCKERFILE = "RUN npm i -g \\\n    @os-eco/burrow-cli@0.3.15 \\\n    other\n";
 
 const ENV_EXAMPLE = [
 	"# Bearer token guarding every route.",
@@ -100,10 +98,6 @@ describe("facts", () => {
 		expect(countOpenApiPaths(OPENAPI)).toBe(2);
 	});
 
-	test("reads the burrow-cli pin from the Dockerfile", () => {
-		expect(extractBurrowPin(DOCKERFILE)).toBe("0.3.15");
-	});
-
 	test("reads the SPDX license identifier", () => {
 		expect(extractLicense(PACKAGE_JSON)).toBe("MIT");
 	});
@@ -126,7 +120,6 @@ describe("facts", () => {
 		["a missing license", () => extractLicense('{ "version": "1.0.0" }')],
 		["a schema with no paths", () => countOpenApiPaths("openapi: 3.1.0\n")],
 		["an empty paths map", () => countOpenApiPaths("paths: {}\n")],
-		["a Dockerfile with no pin", () => extractBurrowPin("FROM oven/bun\n")],
 		["an .env.example with no keys", () => parseEnvExampleKeys("# only comments\n")],
 		["a deployment with no env list", () => parseK8sEnvNames("spec: {}\n")],
 	])("fails loudly on %s", (_label, run) => {
@@ -138,7 +131,6 @@ describe("facts", () => {
 			ref: "v9.9.9",
 			packageJson: PACKAGE_JSON,
 			openapiYaml: OPENAPI,
-			dockerfile: DOCKERFILE,
 			envExample: ENV_EXAMPLE,
 			k8sDeployment: K8S_DEPLOYMENT,
 			commands: [LEAF],
@@ -148,7 +140,6 @@ describe("facts", () => {
 			version: "1.2.3",
 			license: "MIT",
 			httpPathCount: 2,
-			burrowCliPin: "0.3.15",
 			cliCommandCount: 1,
 			cliCommands: ["plan list"],
 			// The union is sorted and de-duplicated across both sources.
@@ -173,7 +164,6 @@ function sourcesFor(docs: ReadonlyMap<string, string>): UpstreamSources {
 		cliMain: CLI_FIXTURE,
 		packageJson: PACKAGE_JSON,
 		openapi: OPENAPI,
-		dockerfile: DOCKERFILE,
 		envExample: ENV_EXAMPLE,
 		k8sDeployment: K8S_DEPLOYMENT,
 		themeCss: THEME_CSS,
