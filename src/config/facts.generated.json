@@ -1,7 +1,7 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.16.0",
-	"version": "0.16.0",
+	"ref": "v0.16.1",
+	"version": "0.16.1",
 	"license": "MIT",
 	"httpPathCount": 40,
 	"burrowCliPin": "0.3.15",
@@ -65,6 +65,8 @@
 		"WARREN_GIT_AUTHOR_EMAIL",
 		"WARREN_GIT_AUTHOR_NAME",
 		"WARREN_GIT_BINARY",
+		"WARREN_HOST_PORT",
+		"WARREN_HOST_PREVIEW_PORT",
 		"WARREN_IMAGE_TAG",
 		"WARREN_K8S_AGENT_IMAGE",
 		"WARREN_K8S_CALLBACK_NAMESPACE",
