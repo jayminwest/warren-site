@@ -1,8 +1,8 @@
 ---
 eyebrow: "Open source · self-hosted · MIT"
-headline: "Coolify for coding agents"
-title: "Warren: self-hostable control plane for coding agents"
-description: "Run coding agents on your own infrastructure. Point warren at a GitHub repository, pick an agent, get a pull request."
+headline: "The self-hosted control plane for coding agents."
+title: "Warren: the self-hosted control plane for coding agents"
+description: "Warren is the self-hosted control plane for coding agents. Issue in, PR out. Your infra, your keys. Sandboxed runs, spend caps, an audit log, and judge verdicts. One container, MIT."
 demoCta:
   label: "Watch it live"
   note: "app.warren.run · real runs, no login"
@@ -15,6 +15,15 @@ secondaryCta:
   href: "/docs/quickstart/"
 ---
 
-Point warren at a GitHub repository, pick an agent, and get a pull request, on your own infrastructure and under your own API keys.
+Issue in, PR out. Your infra, your keys.
 
-One container, one volume, one HTTP API, one UI.
+<pre><code><span>export ANTHROPIC_API_KEY=sk-ant-...</span>
+<span>export GITHUB_TOKEN=ghp_...</span>
+
+<span>docker run -d --name warren -p 8080:8080 \</span>
+<span>  -v /var/run/docker.sock:/var/run/docker.sock \</span>
+<span>  -v "$(command -v docker)":/usr/bin/docker:ro \</span>
+<span>  -v /srv/warren:/srv/warren \</span>
+<span>  -e WARREN_RUNTIME=docker -e WARREN_DATA_DIR=/srv/warren \</span>
+<span>  -e ANTHROPIC_API_KEY -e GITHUB_TOKEN \</span>
+<span>  ghcr.io/jayminwest/warren:latest</span></code></pre>

@@ -14,14 +14,22 @@
  * to it already says what the card is about, so an accessible name here
  * would be read out twice.
  */
-type Glyph = "shield" | "stream" | "loop";
+type Glyph = "send" | "shield" | "gauge" | "stream" | "receipt" | "scale" | "loop";
 
 /** Stroke paths on a 24x24 grid, keyed by the name a content file gives. */
 const GLYPHS: Record<Glyph, string> = {
+	// A paper plane: the dispatch that starts a run.
+	send: "m22 2-11 11M22 2 15 22l-4-9-9-4 20-7Z",
 	// A shield: the sandbox each run is confined to.
 	shield: "M12 3 4 6v6c0 4.5 3.4 7.6 8 9 4.6-1.4 8-4.5 8-9V6l-8-3Z",
+	// A dial with its needle: the spend cap, read mid-run.
+	gauge: "M4 15a8 8 0 0 1 16 0M12 15l4-5",
 	// Stacked lines of unequal length: the event stream, tailing.
 	stream: "M4 7h16M4 12h11M4 17h6",
+	// A till receipt: the append-only audit trail.
+	receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2ZM9 8h6M9 12h6",
+	// A balance: the judge weighing a finished run.
+	scale: "M12 4v16M8 20h8M4 7h16M6 7l-2 5h4ZM18 7l-2 5h4Z",
 	// An arrow that returns on itself: the run that dispatches its own retry.
 	loop: "M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4",
 };

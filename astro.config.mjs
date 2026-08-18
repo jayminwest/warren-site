@@ -139,7 +139,7 @@ export default defineConfig({
 			title: "Warren",
 			head: analyticsHead,
 			description:
-				"Self-hostable control plane for coding agents. Point it at a repository, pick an agent, get a pull request.",
+				"Self-hosted control plane for coding agents. Issue in, PR out. Your infra, your keys.",
 			/**
 			 * No `logo` here on purpose. That option takes an image path, and
 			 * the lockup is now an inline SVG so it can be transparent and
@@ -197,7 +197,7 @@ export default defineConfig({
 				starlightLlmsTxt({
 					projectName: "Warren",
 					description:
-						"Warren is a self-hostable control plane for coding agents. It clones a GitHub repository, runs a coding agent inside a sandbox, streams the run back to an HTTP API and UI, and pushes the resulting branch as a pull request.",
+						"Warren is the self-hosted control plane for coding agents. It clones a GitHub repository, runs a coding agent inside a sandbox, streams the run to an HTTP API and UI, and pushes the resulting branch as a pull request.",
 					details: [
 						"Notes for models reading these docs:",
 						"",

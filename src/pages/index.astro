@@ -18,9 +18,16 @@
  */
 import { Content as ClosingBody, frontmatter as closingMeta } from "../../content/closing.md";
 import {
-	Content as AutonomyBody,
-	frontmatter as autonomyMeta,
-} from "../../content/features/autonomy.md";
+	Content as ControlPlaneBody,
+	frontmatter as controlPlaneMeta,
+} from "../../content/control-plane.md";
+import { Content as AuditBody, frontmatter as auditMeta } from "../../content/features/audit.md";
+import { Content as CapBody, frontmatter as capMeta } from "../../content/features/cap.md";
+import {
+	Content as DispatchBody,
+	frontmatter as dispatchMeta,
+} from "../../content/features/dispatch.md";
+import { Content as JudgeBody, frontmatter as judgeMeta } from "../../content/features/judge.md";
 import {
 	Content as SandboxBody,
 	frontmatter as sandboxMeta,
@@ -31,6 +38,7 @@ import {
 	Content as HowItWorksBody,
 	frontmatter as howItWorksMeta,
 } from "../../content/how-it-works.md";
+import { Content as RecordBody, frontmatter as recordMeta } from "../../content/record.md";
 import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
 import BaseLayout from "../components/BaseLayout.astro";
 import FeatureCard from "../components/FeatureCard.astro";
@@ -71,14 +79,19 @@ const hero = heroMeta as {
 	secondaryCta: Cta;
 };
 const howItWorks = howItWorksMeta as { eyebrow: string; heading: string; steps: Step[] };
+const record = recordMeta as { eyebrow: string; heading: string };
+const controlPlane = controlPlaneMeta as { eyebrow: string; heading: string };
 const selfHost = selfHostMeta as { eyebrow: string; heading: string; cta: Cta };
 const closing = closingMeta as { heading: string; cta: Cta };
 
-/** The pillars, in the order `order` gives them in their frontmatter. */
+/** The control-plane verbs, in the order `order` gives them in their frontmatter. */
 const features = [
+	{ meta: dispatchMeta, Body: DispatchBody },
 	{ meta: sandboxMeta, Body: SandboxBody },
+	{ meta: capMeta, Body: CapBody },
 	{ meta: steerMeta, Body: SteerBody },
-	{ meta: autonomyMeta, Body: AutonomyBody },
+	{ meta: auditMeta, Body: AuditBody },
+	{ meta: judgeMeta, Body: JudgeBody },
 ]
 	.map((entry) => ({
 		...entry,
@@ -86,7 +99,7 @@ const features = [
 			order: number;
 			eyebrow: string;
 			title: string;
-			glyph: "shield" | "stream" | "loop";
+			glyph: "send" | "shield" | "gauge" | "stream" | "receipt" | "scale";
 		},
 	}))
 	.sort((a, b) => a.meta.order - b.meta.order);
@@ -161,6 +174,12 @@ const runEvents = [
 		</dl>
 	</section>
 
+	<section class="shell block" aria-labelledby="record">
+		<p class="eyebrow">{record.eyebrow}</p>
+		<h2 id="record">{record.heading}</h2>
+		<div class="prose"><RecordBody /></div>
+	</section>
+
 	<section class="shell steps" aria-labelledby="how-it-works">
 		<p class="eyebrow">{howItWorks.eyebrow}</p>
 		<h2 id="how-it-works">{howItWorks.heading}</h2>
@@ -169,7 +188,9 @@ const runEvents = [
 	</section>
 
 	<section class="shell block" aria-labelledby="features">
-		<h2 id="features">Three things you get either way</h2>
+		<p class="eyebrow">{controlPlane.eyebrow}</p>
+		<h2 id="features">{controlPlane.heading}</h2>
+		<div class="prose steps-lede"><ControlPlaneBody /></div>
 		<div class="features">
 			{
 				features.map(({ meta, Body }) => (
@@ -245,6 +266,35 @@ const runEvents = [
 		font-family: var(--font-mono);
 		font-size: 0.9375rem;
 		color: var(--color-fg);
+	}
+
+	/*
+	 * The `docker run` snippet from the hero body. The brand playbook puts
+	 * the quickstart command above the fold, so the block gets card chrome
+	 * here and scrolls sideways on a narrow screen instead of stretching
+	 * the page.
+	 *
+	 * The snippet is a raw `<pre>` in `content/hero.md`, NOT a fenced code
+	 * block: Starlight's Expressive Code turns a fence into a component
+	 * that ships a client script, and this page is pinned to
+	 * analytics-only JavaScript (`budgets/bundle-size-budgets.json`). The
+	 * per-line `<span>` wrappers keep the prose guard reading the snippet
+	 * as markup rather than as sentences.
+	 */
+	.lede :global(pre) {
+		margin: 1.25rem 0 0;
+		padding: 1rem 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background-color: var(--color-card);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.6;
+		overflow-x: auto;
+	}
+
+	.lede :global(pre code) {
+		font-family: inherit;
 	}
 
 	.ctas {
@@ -374,10 +424,9 @@ const runEvents = [
 	}
 
 	/*
-	 * Exactly three columns, not `auto-fit`. Three pillars are a
-	 * deliberate count — the section held six cards and read as a wall —
-	 * and `auto-fit` would reflow them to 2+1 at some widths, which looks
-	 * like one card fell off the row.
+	 * Exactly three columns, not `auto-fit`. The six control-plane verbs
+	 * fill two even rows of three, and `auto-fit` would reflow them to an
+	 * uneven split at some widths, which looks like a card fell off a row.
 	 */
 	.features {
 		display: grid;

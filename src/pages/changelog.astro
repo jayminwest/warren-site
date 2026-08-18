@@ -43,8 +43,8 @@ const source = Object.values(changelogs)[0] ?? null;
 const body = source === null ? null : stripLeadingH1(source);
 const rendered = body ? (await (await createMarkdownProcessor({})).render(body)).code : null;
 
-const title = `Changelog — Warren ${UPSTREAM.ref}`;
-const description = `Release notes for warren, generated from CHANGELOG.md at ${UPSTREAM.ref}.`;
+const title = `Changelog: Warren ${UPSTREAM.ref}`;
+const description = `Release notes for warren, from CHANGELOG.md at ${UPSTREAM.ref}.`;
 ---
 
 <BaseLayout title={title} description={description}>
