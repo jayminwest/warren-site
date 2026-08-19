@@ -1,8 +1,8 @@
 ---
 eyebrow: "Open source · self-hosted · MIT"
-headline: "Coolify for coding agents"
-title: "Warren: self-hostable control plane for coding agents"
-description: "Run coding agents on your own infrastructure. Point warren at a GitHub repository, pick an agent, get a pull request."
+headline: "The self-hosted control plane for coding agents."
+title: "Warren: the self-hosted control plane for coding agents"
+description: "Warren is the self-hosted control plane for coding agents. Sandboxed runs, spend caps that hold mid-run, admission control, an append-only audit log, and judge verdicts. Your infra, your keys. One container, MIT."
 demoCta:
   label: "Watch it live"
   note: "app.warren.run · real runs, no login"
@@ -15,6 +15,6 @@ secondaryCta:
   href: "/docs/quickstart/"
 ---
 
-Point warren at a GitHub repository, pick an agent, and get a pull request, on your own infrastructure and under your own API keys.
+Anyone can get a pull request out of an agent. Warren is for what happens next: dozens of runs a day, on your infrastructure, with your API keys.
 
-One container, one volume, one HTTP API, one UI.
+Each run gets a sandbox, a spend cap, an audit trail, and a verdict.

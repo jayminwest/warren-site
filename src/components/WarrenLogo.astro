@@ -122,10 +122,16 @@ const { size = 30, class: className } = Astro.props;
 		fill: var(--color-primary);
 	}
 
+	/*
+	 * Serif at weight 400, matching the heading tier — the redesign dropped
+	 * the wordmark from a heavier weight so it reads as the same face as
+	 * the 400-weight serif headings rather than as a third typeface.
+	 */
 	.wordmark {
-		font-size: calc(var(--mark-size) * 0.62);
-		font-weight: 650;
-		letter-spacing: -0.02em;
+		font-family: var(--font-serif);
+		font-size: calc(var(--mark-size) * 0.68);
+		font-weight: 400;
+		letter-spacing: -0.01em;
 		line-height: 1;
 	}
 </style>

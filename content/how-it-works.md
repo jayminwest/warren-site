@@ -1,19 +1,19 @@
 ---
 eyebrow: "How it works"
-heading: "From a prompt to a pull request"
+heading: "Warren operates the loop"
 steps:
-  - stage: "Project"
-    title: "Add a repository"
-    body: "Give warren a GitHub URL. Warren clones it onto its own volume."
-  - stage: "Dispatch"
-    title: "Pick an agent, write a prompt"
-    body: "The claude-code, sapling, and pi agents ship in the image. Five more built-in agents plan, triage, and repair."
-  - stage: "Run"
-    title: "Watch and steer"
-    body: "The agent works in a sandbox while every event streams to your browser. Send a message mid-run and the agent reads it on its next turn."
-  - stage: "Result"
-    title: "Take the branch"
-    body: "Warren pushes the branch and opens a pull request. The sandbox goes away with the run."
+  - stage: "Intake"
+    title: "Queue the work"
+    body: "Dispatch by hand, or do not: cron triggers, alerts, and the CI fixer start runs with no prompt from you."
+  - stage: "Admission"
+    title: "Warren admits what fits"
+    body: "Admission control holds queue depth and per-project concurrency. Duplicate dispatches fold onto one run."
+  - stage: "Runtime"
+    title: "Warren contains the run"
+    body: "Every run gets a fresh sandbox and a live spend cap. A watchdog reaps hung runs. You steer only to correct course."
+  - stage: "Record"
+    title: "Warren keeps the record"
+    body: "Warren pushes the branch, opens the pull request, logs the run, and judges it. A run that dies mid-work still leaves its work behind."
 ---
 
-Four stages, one path. The web UI, the `warren` CLI, and the HTTP API all follow it, so a cron trigger and a hand-typed prompt behave the same way.
+Your judgment belongs in two artifacts: the issue before, the PR after. Warren operates everything in between.

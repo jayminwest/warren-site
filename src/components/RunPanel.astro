@@ -78,12 +78,12 @@ const { href, rows } = Astro.props;
 	 * contain block-level content, and wrapping the whole panel in one
 	 * anchor is what makes the drawing lead somewhere real.
 	 */
+	/* Flat field-manual tile: hairline, hard-ish corners, no elevation. */
 	.panel {
 		display: block;
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-xl);
+		border-radius: 4px;
 		background-color: var(--color-card);
-		box-shadow: var(--shadow-md);
 		overflow: hidden;
 		color: var(--color-fg);
 		text-decoration: none;
@@ -107,15 +107,14 @@ const { href, rows } = Astro.props;
 		gap: 0.375rem;
 	}
 
+	/* Hard squares, like every status mark in the field manual. */
 	.dots i {
-		width: 0.625rem;
-		height: 0.625rem;
-		border-radius: 50%;
-		background-color: var(--color-border);
+		width: 6px;
+		height: 6px;
+		background-color: var(--fm-line-strong);
 	}
 
 	.host {
-		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 		color: var(--color-muted-foreground);
 	}
@@ -125,18 +124,34 @@ const { href, rows } = Astro.props;
 		align-items: center;
 		gap: 0.375rem;
 		margin-left: auto;
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		letter-spacing: 0.06em;
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		color: var(--color-success);
 	}
 
 	.pip {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 50%;
+		width: 6px;
+		height: 6px;
 		background-color: var(--color-success);
+		animation: pulse 2s ease-in-out infinite;
+	}
+
+	/*
+	 * The one motion concession the field manual makes: a live surface
+	 * must read as live. Still, honor reduced-motion.
+	 */
+	@keyframes pulse {
+		50% {
+			opacity: 0.35;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pip {
+			animation: none;
+		}
 	}
 
 	.head {
@@ -148,10 +163,11 @@ const { href, rows } = Astro.props;
 		border-bottom: 1px solid var(--color-border);
 	}
 
+	/* Ids and refs get the accent — the field manual's narrow spend. */
 	.run-id {
-		font-family: var(--font-mono);
-		font-size: 0.9375rem;
+		font-size: 0.875rem;
 		font-weight: 500;
+		color: var(--color-primary);
 	}
 
 	.meta {
@@ -160,12 +176,11 @@ const { href, rows } = Astro.props;
 		gap: 0.375rem;
 	}
 
+	/* Pills are bordered objects: hairline, near-hard corners, no fill. */
 	.tag {
-		padding: 0.125rem 0.5rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-sm);
-		background-color: var(--color-muted);
-		font-family: var(--font-mono);
+		padding: 0.0625rem 0.5rem;
+		border: 1px solid var(--fm-line-strong);
+		border-radius: 2px;
 		font-size: 0.75rem;
 		color: var(--color-muted-foreground);
 	}
@@ -178,12 +193,11 @@ const { href, rows } = Astro.props;
 	 */
 	.run-state {
 		margin-left: auto;
-		padding: 0.125rem 0.625rem;
-		border-radius: var(--radius-sm);
-		background-color: color-mix(in oklab, var(--color-info) 18%, transparent);
-		font-family: var(--font-mono);
+		padding: 0.0625rem 0.5rem;
+		border: 1px solid color-mix(in oklab, var(--color-info) 45%, var(--color-border));
+		border-radius: 2px;
 		font-size: 0.75rem;
-		color: var(--color-info-foreground);
+		color: var(--color-info);
 	}
 
 	.stream {
@@ -198,14 +212,13 @@ const { href, rows } = Astro.props;
 		align-items: baseline;
 		gap: 0.625rem;
 		padding-block: 0.25rem;
-		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 	}
 
+	/* Hard square, like every status mark in the field manual. */
 	.dot {
-		width: 0.375rem;
-		height: 0.375rem;
-		border-radius: 50%;
+		width: 5px;
+		height: 5px;
 		background-color: var(--color-neutral);
 	}
 
@@ -249,14 +262,13 @@ const { href, rows } = Astro.props;
 	}
 
 	.branch {
-		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 		color: var(--color-muted-foreground);
 	}
 
 	.cta {
 		margin-left: auto;
-		font-size: 0.875rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		color: var(--color-primary);
 	}

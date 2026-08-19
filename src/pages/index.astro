@@ -13,14 +13,22 @@
  *
  * Constraints this page must keep: no client JavaScript beyond the
  * analytics tags `BaseLayout` injects (see `src/config/analytics.ts`),
- * and no color, font, radius, or shadow that is not a vendored warren
- * token.
+ * and no color, font, or radius that is not a vendored warren token or a
+ * field-manual derivation from `starlight-overrides.css` (the `--fm-*`
+ * steps and `--font-serif`). No shadows at all — hairlines separate.
  */
 import { Content as ClosingBody, frontmatter as closingMeta } from "../../content/closing.md";
 import {
-	Content as AutonomyBody,
-	frontmatter as autonomyMeta,
-} from "../../content/features/autonomy.md";
+	Content as ControlPlaneBody,
+	frontmatter as controlPlaneMeta,
+} from "../../content/control-plane.md";
+import { Content as AuditBody, frontmatter as auditMeta } from "../../content/features/audit.md";
+import { Content as CapBody, frontmatter as capMeta } from "../../content/features/cap.md";
+import {
+	Content as DispatchBody,
+	frontmatter as dispatchMeta,
+} from "../../content/features/dispatch.md";
+import { Content as JudgeBody, frontmatter as judgeMeta } from "../../content/features/judge.md";
 import {
 	Content as SandboxBody,
 	frontmatter as sandboxMeta,
@@ -31,6 +39,7 @@ import {
 	Content as HowItWorksBody,
 	frontmatter as howItWorksMeta,
 } from "../../content/how-it-works.md";
+import { Content as RecordBody, frontmatter as recordMeta } from "../../content/record.md";
 import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
 import BaseLayout from "../components/BaseLayout.astro";
 import FeatureCard from "../components/FeatureCard.astro";
@@ -71,14 +80,19 @@ const hero = heroMeta as {
 	secondaryCta: Cta;
 };
 const howItWorks = howItWorksMeta as { eyebrow: string; heading: string; steps: Step[] };
+const record = recordMeta as { eyebrow: string; heading: string };
+const controlPlane = controlPlaneMeta as { eyebrow: string; heading: string };
 const selfHost = selfHostMeta as { eyebrow: string; heading: string; cta: Cta };
 const closing = closingMeta as { heading: string; cta: Cta };
 
-/** The pillars, in the order `order` gives them in their frontmatter. */
+/** The control-plane verbs, in the order `order` gives them in their frontmatter. */
 const features = [
+	{ meta: dispatchMeta, Body: DispatchBody },
 	{ meta: sandboxMeta, Body: SandboxBody },
+	{ meta: capMeta, Body: CapBody },
 	{ meta: steerMeta, Body: SteerBody },
-	{ meta: autonomyMeta, Body: AutonomyBody },
+	{ meta: auditMeta, Body: AuditBody },
+	{ meta: judgeMeta, Body: JudgeBody },
 ]
 	.map((entry) => ({
 		...entry,
@@ -86,7 +100,7 @@ const features = [
 			order: number;
 			eyebrow: string;
 			title: string;
-			glyph: "shield" | "stream" | "loop";
+			glyph: "send" | "shield" | "gauge" | "stream" | "receipt" | "scale";
 		},
 	}))
 	.sort((a, b) => a.meta.order - b.meta.order);
@@ -161,6 +175,12 @@ const runEvents = [
 		</dl>
 	</section>
 
+	<section class="shell block" aria-labelledby="record">
+		<p class="eyebrow">{record.eyebrow}</p>
+		<h2 id="record">{record.heading}</h2>
+		<div class="prose"><RecordBody /></div>
+	</section>
+
 	<section class="shell steps" aria-labelledby="how-it-works">
 		<p class="eyebrow">{howItWorks.eyebrow}</p>
 		<h2 id="how-it-works">{howItWorks.heading}</h2>
@@ -169,7 +189,9 @@ const runEvents = [
 	</section>
 
 	<section class="shell block" aria-labelledby="features">
-		<h2 id="features">Three things you get either way</h2>
+		<p class="eyebrow">{controlPlane.eyebrow}</p>
+		<h2 id="features">{controlPlane.heading}</h2>
+		<div class="prose steps-lede"><ControlPlaneBody /></div>
 		<div class="features">
 			{
 				features.map(({ meta, Body }) => (
@@ -199,51 +221,45 @@ const runEvents = [
 </BaseLayout>
 
 <style>
+	/* Flat, per the field manual: no gradient — a hairline closes the hero. */
 	.hero {
-		padding-block: 5rem 3.5rem;
+		padding-block: 4.5rem 3.5rem;
 		border-bottom: 1px solid var(--color-border);
-		background:
-			radial-gradient(
-				60rem 24rem at 50% -8rem,
-				color-mix(in oklab, var(--color-primary) 14%, transparent),
-				transparent 70%
-			),
-			var(--color-bg);
+		background: var(--color-bg);
 	}
 
+	/* The uppercase mono micro-label — the one sanctioned label style. */
 	.eyebrow {
-		margin: 0 0 1rem;
+		margin: 0 0 1.25rem;
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		letter-spacing: 0.06em;
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--color-primary);
+		color: var(--color-muted-foreground);
 	}
 
 	h1 {
 		margin: 0;
-		max-width: 20ch;
-		font-size: clamp(2.25rem, 6vw, 3.5rem);
-		font-weight: 650;
-		line-height: 1.08;
-		letter-spacing: -0.02em;
+		max-width: 24ch;
+		font-size: clamp(2.25rem, 5.5vw, 3.25rem);
+		line-height: 1.05;
 	}
 
 	.lede {
 		margin-top: 1.25rem;
-		max-width: 60ch;
+		max-width: 64ch;
 		color: var(--color-muted-foreground);
 	}
 
 	.lede :global(p) {
 		margin: 0 0 0.75rem;
-		font-size: 1.125rem;
+		font-size: 0.875rem;
+		line-height: 1.6;
 	}
 
 	.lede :global(p:last-child) {
 		margin-bottom: 0;
-		font-family: var(--font-mono);
-		font-size: 0.9375rem;
 		color: var(--color-fg);
 	}
 
@@ -264,7 +280,7 @@ const runEvents = [
 		gap: 0.625rem;
 		margin-top: 2rem;
 		border-color: color-mix(in oklab, var(--color-success) 45%, var(--color-border));
-		background-color: color-mix(in oklab, var(--color-success) 8%, var(--color-card));
+		background-color: var(--color-card);
 		color: var(--color-fg);
 	}
 
@@ -272,21 +288,20 @@ const runEvents = [
 		border-color: var(--color-success);
 	}
 
+	/* Status marks are hard squares in the field manual, not dots. */
 	.pip {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 50%;
+		width: 6px;
+		height: 6px;
 		background-color: var(--color-success);
 	}
 
 	.demo-label {
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	.demo-note {
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		color: var(--color-muted-foreground);
+		font-size: 0.75rem;
+		color: var(--fm-faint);
 	}
 
 	@media (max-width: 34rem) {
@@ -299,32 +314,34 @@ const runEvents = [
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.625rem 1.25rem;
+		padding: 0.55rem 1rem;
 		border: 1px solid transparent;
-		border-radius: var(--radius-md);
-		font-size: 0.9375rem;
+		border-radius: 3px;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		text-decoration: none;
 	}
 
+	/* The primary action is the one place the accent fills a surface. */
 	.cta.primary {
 		background-color: var(--color-primary);
 		color: var(--color-primary-foreground);
-		box-shadow: var(--shadow-sm);
 	}
 
 	.cta.primary:hover {
-		background-color: color-mix(in oklab, var(--color-primary) 88%, var(--color-fg));
+		background-color: color-mix(in oklab, var(--color-primary) 92%, var(--color-fg));
 	}
 
+	/* Secondary actions are bordered objects, not a second button fill. */
 	.cta.secondary {
-		border-color: var(--color-border);
-		background-color: var(--color-card);
-		color: var(--color-fg);
+		border-color: var(--fm-line-strong);
+		background-color: transparent;
+		color: var(--color-muted-foreground);
 	}
 
 	.cta.secondary:hover {
-		border-color: var(--color-primary);
+		border-color: var(--fm-line-strong);
+		color: var(--color-fg);
 	}
 
 	.sample {
@@ -338,17 +355,20 @@ const runEvents = [
 		margin: 1.5rem 0 0;
 	}
 
+	/* Vitals: big mono numbers over faint micro-labels, accent unspent. */
 	.stats dt {
-		font-size: 0.8125rem;
-		color: var(--color-muted-foreground);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--fm-faint);
 	}
 
 	.stats dd {
-		margin: 0.125rem 0 0;
-		font-family: var(--font-mono);
+		margin: 0.25rem 0 0;
 		font-size: 1.5rem;
-		font-weight: 500;
-		color: var(--color-primary);
+		font-variant-numeric: tabular-nums;
+		color: var(--color-fg);
 	}
 
 	.block,
@@ -358,10 +378,8 @@ const runEvents = [
 
 	h2 {
 		margin: 0 0 1.5rem;
-		font-size: clamp(1.5rem, 3.5vw, 2rem);
-		font-weight: 650;
-		line-height: 1.2;
-		letter-spacing: -0.01em;
+		font-size: clamp(1.5rem, 3.5vw, 1.85rem);
+		line-height: 1.15;
 	}
 
 	.steps .eyebrow,
@@ -374,10 +392,9 @@ const runEvents = [
 	}
 
 	/*
-	 * Exactly three columns, not `auto-fit`. Three pillars are a
-	 * deliberate count — the section held six cards and read as a wall —
-	 * and `auto-fit` would reflow them to 2+1 at some widths, which looks
-	 * like one card fell off the row.
+	 * Exactly three columns, not `auto-fit`. The six control-plane verbs
+	 * fill two even rows of three, and `auto-fit` would reflow them to an
+	 * uneven split at some widths, which looks like a card fell off a row.
 	 */
 	.features {
 		display: grid;
@@ -392,8 +409,10 @@ const runEvents = [
 	}
 
 	.prose {
-		max-width: 60ch;
+		max-width: 68ch;
 		color: var(--color-muted-foreground);
+		font-size: 0.875rem;
+		line-height: 1.6;
 	}
 
 	.prose :global(p) {
@@ -402,7 +421,6 @@ const runEvents = [
 
 	.prose :global(code) {
 		font-family: var(--font-mono);
-		font-size: 0.875em;
 		color: var(--color-fg);
 		overflow-wrap: anywhere;
 	}

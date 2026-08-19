@@ -1,10 +1,24 @@
 /*
  * Site-owned stylesheet: brand fonts + the mapping from warren's design
  * tokens (see `warren-theme.css`, vendored) onto Starlight's own CSS
- * custom properties.
+ * custom properties, plus the "field manual" treatment from the UI
+ * redesign exploration (`.marketing/ui-revamp/`, direction A).
+ *
+ * FIELD-MANUAL CONTRACT (from the redesign): two type families only.
+ * Source Serif 4 carries language — headings, the wordmark, italic group
+ * labels, long-form docs prose. IBM Plex Mono carries everything else —
+ * navigation, labels, data, annotations, short marketing prose. Hairlines
+ * separate; surfaces do not float: no shadows, radii stay at 2–4px, and
+ * the one accent (warren green) is spent narrowly on ids, primary
+ * actions, and active navigation. Colors are the vendored warren tokens;
+ * the few extra neutral steps the treatment needs (`--fm-*`) are derived
+ * here, in both modes.
  *
  * Load order matters — `astro.config.mjs` lists `warren-theme.css` first
- * so every `var(--color-*)` reference below already resolves.
+ * so every `var(--color-*)` reference below already resolves. The
+ * `--font-mono` declaration below deliberately re-points the vendored
+ * token at IBM Plex Mono: the vendored file cannot be edited (generated),
+ * and this file loads after it, so an unlayered `:root` here wins.
  *
  * CASCADE NOTE. Starlight ships its own properties inside
  * `@layer starlight.base`. Unlayered declarations always beat layered
@@ -29,33 +43,37 @@
 /*
  * Self-hosted brand fonts.
  *
- * As in warren's UI, @font-face is declared inline against the
- * @fontsource-variable woff2 payloads instead of importing the packages'
- * bundled CSS: those stylesheets ship a rule for every subset (cyrillic /
- * greek / vietnamese / latin-ext / latin) and inflate the CSS bundle past
- * the check:bundle-size ratchet. The site is English-only; latin +
- * latin-ext covers what we ship. Variable fonts give the full 100–900
- * weight axis from a single woff2 per family. Unicode ranges are copied
- * from the upstream `wght.css` so the browser fetches latin-ext only when
- * a page actually uses it.
+ * @font-face is declared inline against the @fontsource woff2 payloads
+ * instead of importing the packages' bundled CSS: those stylesheets ship
+ * a rule for every subset (cyrillic / greek / vietnamese / latin-ext /
+ * latin) and inflate the CSS bundle past the check:bundle-size ratchet.
+ * The site is English-only; latin + latin-ext covers what we ship.
+ * Unicode ranges are copied from the upstream fontsource CSS so the
+ * browser fetches latin-ext only when a page actually uses it.
+ *
+ * Source Serif 4 is a variable font (one woff2 per subset covers the
+ * 200–900 weight axis); the italic ships latin-only because italics on
+ * this site are sparse emphasis, not body text. IBM Plex Mono has no
+ * variable release, so the two weights the design uses (400, 500) are
+ * static files.
  */
 @font-face {
-	font-family: "Inter Variable";
+	font-family: "Source Serif 4 Variable";
 	font-style: normal;
 	font-display: swap;
-	font-weight: 100 900;
-	src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
+	font-weight: 200 900;
+	src: url("@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2")
 		format("woff2-variations");
 	unicode-range:
 		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
 		U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-	font-family: "Inter Variable";
+	font-family: "Source Serif 4 Variable";
 	font-style: normal;
 	font-display: swap;
-	font-weight: 100 900;
-	src: url("@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2")
+	font-weight: 200 900;
+	src: url("@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2")
 		format("woff2-variations");
 	unicode-range:
 		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
@@ -63,23 +81,55 @@
 		U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-	font-family: "JetBrains Mono Variable";
-	font-style: normal;
+	font-family: "Source Serif 4 Variable";
+	font-style: italic;
 	font-display: swap;
-	font-weight: 100 900;
-	src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2")
+	font-weight: 200 900;
+	src: url("@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2")
 		format("woff2-variations");
 	unicode-range:
 		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
 		U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-	font-family: "JetBrains Mono Variable";
+	font-family: "IBM Plex Mono";
 	font-style: normal;
 	font-display: swap;
-	font-weight: 100 900;
-	src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2")
-		format("woff2-variations");
+	font-weight: 400;
+	src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+		U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: "IBM Plex Mono";
+	font-style: normal;
+	font-display: swap;
+	font-weight: 400;
+	src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-400-normal.woff2")
+		format("woff2");
+	unicode-range:
+		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+		U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+		U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+	font-family: "IBM Plex Mono";
+	font-style: normal;
+	font-display: swap;
+	font-weight: 500;
+	src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+		U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: "IBM Plex Mono";
+	font-style: normal;
+	font-display: swap;
+	font-weight: 500;
+	src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff2")
+		format("woff2");
 	unicode-range:
 		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
 		U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
@@ -87,12 +137,43 @@
 }
 
 /*
+ * Type roles + the field-manual neutral steps the vendored tokens do not
+ * name. `--font-mono` re-points the vendored token (see the header);
+ * `--font-serif` is site-owned. `--fm-faint` is the quietest text step
+ * (below `--color-muted-foreground`), `--fm-line-strong` the heavier
+ * hairline (table header rules, input borders), `--fm-accent-dim` the
+ * quiet accent surface (selection, accent hairlines). Light values on
+ * bare `:root` (warren's keying); dark under the explicit attribute.
+ */
+:root {
+	--font-serif:
+		"Source Serif 4 Variable", "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman",
+		serif;
+	--font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+	--fm-faint: oklch(60% 0.01 264);
+	--fm-line-strong: oklch(84% 0.01 264);
+	--fm-accent-dim: oklch(88% 0.05 152);
+}
+
+:root[data-theme="dark"] {
+	--fm-faint: oklch(50% 0.014 264);
+	--fm-line-strong: oklch(30% 0.012 264);
+	--fm-accent-dim: oklch(38% 0.06 152);
+}
+
+/*
  * Mode-agnostic mapping. Each of these points at a warren token, so it
  * follows whichever token set `data-theme` has selected — one declaration
  * covers both modes.
+ *
+ * `--sl-font` is the MONO: in the field-manual system the page default is
+ * mono and long-form reading prose opts back INTO the serif (see the
+ * `.sl-markdown-content` block below). Shadows are gone on purpose —
+ * hairlines are the separation mechanism.
  */
 :root {
-	--sl-font: var(--font-sans);
+	--sl-font: var(--font-mono);
 	--sl-font-mono: var(--font-mono);
 
 	--sl-color-bg: var(--color-bg);
@@ -104,9 +185,9 @@
 	--sl-color-hairline-light: var(--color-border);
 	--sl-color-hairline-shade: var(--color-border);
 
-	--sl-shadow-sm: var(--shadow-sm);
-	--sl-shadow-md: var(--shadow-md);
-	--sl-shadow-lg: var(--shadow-lg);
+	--sl-shadow-sm: none;
+	--sl-shadow-md: none;
+	--sl-shadow-lg: none;
 }
 
 /*
@@ -195,37 +276,133 @@
 		--color-primary-foreground: oklch(15% 0.01 152);
 		--color-success: oklch(72% 0.13 150);
 		/*
-		 * The status tokens the run panel draws with. A `-foreground` token
-		 * is the one that MUST be here: its light value is a dark ink meant
-		 * for a pale fill, so leaving it out renders the run-state pill
-		 * dark-on-dark and effectively invisible. Adding a status color to
-		 * `RunPanel.astro` means adding its pair here.
+		 * The status tokens the run panel draws with — status color reads as
+		 * colored TEXT on a hairline pill in the field-manual treatment, so
+		 * only the base tokens are needed here, no `-foreground` pairs.
 		 */
 		--color-info: oklch(72% 0.14 240);
-		--color-info-foreground: oklch(94% 0.05 240);
 		--color-warning: oklch(80% 0.15 75);
 		--color-neutral: oklch(70% 0.02 264);
+
+		/* Field-manual derived steps (declared above for themed pages). */
+		--fm-faint: oklch(50% 0.014 264);
+		--fm-line-strong: oklch(30% 0.012 264);
+		--fm-accent-dim: oklch(38% 0.06 152);
 	}
 }
 
 /* Tabular numerals on data surfaces, matching warren's UI base rules. */
 table,
 code,
-pre {
+pre,
+kbd {
 	font-variant-numeric: tabular-nums;
 }
 
-/* Site header: hairline + the vendored elevation ramp, not Starlight's. */
+/* The quiet accent surface doubles as the selection color, both themes. */
+::selection {
+	background-color: var(--fm-accent-dim);
+	color: var(--color-fg);
+}
+
+/* Site header: hairline only. Flat — hairlines separate, not shadows. */
 .header {
 	border-bottom: 1px solid var(--color-border);
-	box-shadow: var(--shadow-sm);
+	box-shadow: none;
+}
+
+/* ============================================================
+   Docs (Starlight) — field-manual treatment.
+   The chrome (header, sidebars, pagination, search) inherits the
+   mono page default from `--sl-font` above. Long-form reading
+   prose opts back into the serif here, because carrying language
+   is what the serif is FOR; data inside that prose (code, tables)
+   drops back to mono.
+   ============================================================ */
+
+/* Reading prose: serif, at a reading size. */
+.sl-markdown-content {
+	font-family: var(--font-serif);
+	font-size: 1.0625rem;
+}
+
+/* Data surfaces inside prose stay mono, at the field-manual scale. */
+.sl-markdown-content :is(table, code, pre, kbd) {
+	font-family: var(--font-mono);
+}
+
+.sl-markdown-content table {
+	font-size: 0.8125rem;
+}
+
+/* Headings: serif at weight 400, the field-manual heading tier. */
+main h1,
+.sl-markdown-content :is(h1, h2, h3, h4) {
+	font-family: var(--font-serif);
+	font-weight: 400;
+	letter-spacing: -0.01em;
+}
+
+/* The two smallest tiers read better as mono micro-labels. */
+.sl-markdown-content :is(h5, h6) {
+	font-family: var(--font-mono);
+	font-weight: 500;
+	font-size: 0.6875rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--sl-color-gray-3);
 }
 
 /*
- * The logo is deliberately NOT resized here — Starlight sizes it from
- * `--sl-nav-height` and shrinks it with the nav on small screens, and a
- * fixed height would break that.
+ * Sidebar: mono links, and the italic-serif group label from the
+ * field-manual sidebar (`.side-nav .group` in the mockups).
  */
+.sidebar-content {
+	font-size: var(--sl-text-sm);
+}
+
+.sidebar-content .group-label .large {
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-weight: 400;
+	font-size: 0.9375rem;
+	color: var(--sl-color-gray-3);
+}
+
+/* Right rail ("On this page"): the uppercase mono micro-label. */
+.right-sidebar h2 {
+	font-family: var(--font-mono);
+	font-weight: 500;
+	font-size: 0.6875rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--sl-color-gray-3);
+}
+
+/*
+ * Hard corners: Starlight rounds its interactive chrome at 0.5rem+;
+ * the field manual holds everything at 2–4px.
+ */
+.sl-markdown-content :is(.starlight-aside, pre),
+.pagination-links a,
+button[data-open-modal],
+.sl-badge,
+starlight-menu-button button,
+.sl-markdown-content .expressive-code .frame,
+.sl-markdown-content .expressive-code .frame pre,
+.sl-markdown-content .expressive-code .copy button {
+	border-radius: 3px;
+}
+
+/* Pagination cards flatten to hairline tiles. */
+.pagination-links a {
+	box-shadow: none;
+	border: 1px solid var(--color-border);
+}
+
+.pagination-links a:hover {
+	border-color: var(--fm-line-strong);
+}
 
 /*
  * Accessible name for a table column whose header upstream left blank.
