@@ -5,4 +5,4 @@ glyph: "shield"
 title: "Every run is sandboxed"
 ---
 
-Each run gets a fresh sandbox, and the host stays out of reach. On one box that sandbox is a `bwrap` workspace. Under Docker it is a sibling container. On Kubernetes it is a pod with its own CPU and memory limits.
+Each run gets a fresh sandbox: `bwrap` on one box, a container under Docker, a pod on Kubernetes. A runaway run kills its sandbox, not the control plane.

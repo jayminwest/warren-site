@@ -2,7 +2,7 @@
 order: 1
 eyebrow: "Dispatch"
 glyph: "send"
-title: "One path from issue to branch"
+title: "Every trigger, one pipeline"
 ---
 
-An issue goes in, an agent spawns, a pull request comes out. Dispatch from the web UI, the `warren` CLI, or the HTTP API. Plan runs chain issues and gate each child run on the previous merge.
+An operator, a schedule, an alert, or a failing check starts a run. Every path lands in one pipeline. Plan runs walk a whole backlog.

@@ -1,5 +1,5 @@
 ---
-tagline: "Self-hosted control plane for coding agents. Issue in, PR out."
+tagline: "The self-hosted control plane for coding agents."
 ---
 
-Warren clones a GitHub repository, runs a coding agent inside a sandbox, and pushes the branch back as a pull request. It is part of the os-eco tool set.
+Warren dispatches coding agents at your GitHub repositories and controls what happens around the run: sandbox, spend cap, audit log, verdict. It is part of the os-eco tool set.

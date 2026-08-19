@@ -139,7 +139,7 @@ export default defineConfig({
 			title: "Warren",
 			head: analyticsHead,
 			description:
-				"Self-hosted control plane for coding agents. Issue in, PR out. Your infra, your keys.",
+				"Self-hosted control plane for coding agents. Sandboxed runs, spend caps, an audit log, and judge verdicts. Your infra, your keys.",
 			/**
 			 * No `logo` here on purpose. That option takes an image path, and
 			 * the lockup is now an inline SVG so it can be transparent and
