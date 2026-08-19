@@ -13,8 +13,9 @@
  *
  * Constraints this page must keep: no client JavaScript beyond the
  * analytics tags `BaseLayout` injects (see `src/config/analytics.ts`),
- * and no color, font, radius, or shadow that is not a vendored warren
- * token.
+ * and no color, font, or radius that is not a vendored warren token or a
+ * field-manual derivation from `starlight-overrides.css` (the `--fm-*`
+ * steps and `--font-serif`). No shadows at all — hairlines separate.
  */
 import { Content as ClosingBody, frontmatter as closingMeta } from "../../content/closing.md";
 import {
@@ -220,81 +221,46 @@ const runEvents = [
 </BaseLayout>
 
 <style>
+	/* Flat, per the field manual: no gradient — a hairline closes the hero. */
 	.hero {
-		padding-block: 5rem 3.5rem;
+		padding-block: 4.5rem 3.5rem;
 		border-bottom: 1px solid var(--color-border);
-		background:
-			radial-gradient(
-				60rem 24rem at 50% -8rem,
-				color-mix(in oklab, var(--color-primary) 14%, transparent),
-				transparent 70%
-			),
-			var(--color-bg);
+		background: var(--color-bg);
 	}
 
+	/* The uppercase mono micro-label — the one sanctioned label style. */
 	.eyebrow {
-		margin: 0 0 1rem;
+		margin: 0 0 1.25rem;
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		letter-spacing: 0.06em;
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--color-primary);
+		color: var(--color-muted-foreground);
 	}
 
 	h1 {
 		margin: 0;
-		max-width: 20ch;
-		font-size: clamp(2.25rem, 6vw, 3.5rem);
-		font-weight: 650;
-		line-height: 1.08;
-		letter-spacing: -0.02em;
+		max-width: 24ch;
+		font-size: clamp(2.25rem, 5.5vw, 3.25rem);
+		line-height: 1.05;
 	}
 
 	.lede {
 		margin-top: 1.25rem;
-		max-width: 60ch;
+		max-width: 64ch;
 		color: var(--color-muted-foreground);
 	}
 
 	.lede :global(p) {
 		margin: 0 0 0.75rem;
-		font-size: 1.125rem;
+		font-size: 0.875rem;
+		line-height: 1.6;
 	}
 
 	.lede :global(p:last-child) {
 		margin-bottom: 0;
-		font-family: var(--font-mono);
-		font-size: 0.9375rem;
 		color: var(--color-fg);
-	}
-
-	/*
-	 * The `docker run` snippet from the hero body. The brand playbook puts
-	 * the quickstart command above the fold, so the block gets card chrome
-	 * here and scrolls sideways on a narrow screen instead of stretching
-	 * the page.
-	 *
-	 * The snippet is a raw `<pre>` in `content/hero.md`, NOT a fenced code
-	 * block: Starlight's Expressive Code turns a fence into a component
-	 * that ships a client script, and this page is pinned to
-	 * analytics-only JavaScript (`budgets/bundle-size-budgets.json`). The
-	 * per-line `<span>` wrappers keep the prose guard reading the snippet
-	 * as markup rather than as sentences.
-	 */
-	.lede :global(pre) {
-		margin: 1.25rem 0 0;
-		padding: 1rem 1.25rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		background-color: var(--color-card);
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		line-height: 1.6;
-		overflow-x: auto;
-	}
-
-	.lede :global(pre code) {
-		font-family: inherit;
 	}
 
 	.ctas {
@@ -314,7 +280,7 @@ const runEvents = [
 		gap: 0.625rem;
 		margin-top: 2rem;
 		border-color: color-mix(in oklab, var(--color-success) 45%, var(--color-border));
-		background-color: color-mix(in oklab, var(--color-success) 8%, var(--color-card));
+		background-color: var(--color-card);
 		color: var(--color-fg);
 	}
 
@@ -322,21 +288,20 @@ const runEvents = [
 		border-color: var(--color-success);
 	}
 
+	/* Status marks are hard squares in the field manual, not dots. */
 	.pip {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 50%;
+		width: 6px;
+		height: 6px;
 		background-color: var(--color-success);
 	}
 
 	.demo-label {
-		font-weight: 600;
+		font-weight: 500;
 	}
 
 	.demo-note {
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		color: var(--color-muted-foreground);
+		font-size: 0.75rem;
+		color: var(--fm-faint);
 	}
 
 	@media (max-width: 34rem) {
@@ -349,32 +314,34 @@ const runEvents = [
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.625rem 1.25rem;
+		padding: 0.55rem 1rem;
 		border: 1px solid transparent;
-		border-radius: var(--radius-md);
-		font-size: 0.9375rem;
+		border-radius: 3px;
+		font-size: 0.8125rem;
 		font-weight: 500;
 		text-decoration: none;
 	}
 
+	/* The primary action is the one place the accent fills a surface. */
 	.cta.primary {
 		background-color: var(--color-primary);
 		color: var(--color-primary-foreground);
-		box-shadow: var(--shadow-sm);
 	}
 
 	.cta.primary:hover {
-		background-color: color-mix(in oklab, var(--color-primary) 88%, var(--color-fg));
+		background-color: color-mix(in oklab, var(--color-primary) 92%, var(--color-fg));
 	}
 
+	/* Secondary actions are bordered objects, not a second button fill. */
 	.cta.secondary {
-		border-color: var(--color-border);
-		background-color: var(--color-card);
-		color: var(--color-fg);
+		border-color: var(--fm-line-strong);
+		background-color: transparent;
+		color: var(--color-muted-foreground);
 	}
 
 	.cta.secondary:hover {
-		border-color: var(--color-primary);
+		border-color: var(--fm-line-strong);
+		color: var(--color-fg);
 	}
 
 	.sample {
@@ -388,17 +355,20 @@ const runEvents = [
 		margin: 1.5rem 0 0;
 	}
 
+	/* Vitals: big mono numbers over faint micro-labels, accent unspent. */
 	.stats dt {
-		font-size: 0.8125rem;
-		color: var(--color-muted-foreground);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--fm-faint);
 	}
 
 	.stats dd {
-		margin: 0.125rem 0 0;
-		font-family: var(--font-mono);
+		margin: 0.25rem 0 0;
 		font-size: 1.5rem;
-		font-weight: 500;
-		color: var(--color-primary);
+		font-variant-numeric: tabular-nums;
+		color: var(--color-fg);
 	}
 
 	.block,
@@ -408,10 +378,8 @@ const runEvents = [
 
 	h2 {
 		margin: 0 0 1.5rem;
-		font-size: clamp(1.5rem, 3.5vw, 2rem);
-		font-weight: 650;
-		line-height: 1.2;
-		letter-spacing: -0.01em;
+		font-size: clamp(1.5rem, 3.5vw, 1.85rem);
+		line-height: 1.15;
 	}
 
 	.steps .eyebrow,
@@ -441,8 +409,10 @@ const runEvents = [
 	}
 
 	.prose {
-		max-width: 60ch;
+		max-width: 68ch;
 		color: var(--color-muted-foreground);
+		font-size: 0.875rem;
+		line-height: 1.6;
 	}
 
 	.prose :global(p) {
@@ -451,7 +421,6 @@ const runEvents = [
 
 	.prose :global(code) {
 		font-family: var(--font-mono);
-		font-size: 0.875em;
 		color: var(--color-fg);
 		overflow-wrap: anywhere;
 	}
