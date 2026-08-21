@@ -14,7 +14,7 @@
  * to it already says what the card is about, so an accessible name here
  * would be read out twice.
  */
-type Glyph = "send" | "shield" | "gauge" | "stream" | "receipt" | "scale" | "loop";
+type Glyph = "send" | "shield" | "gauge" | "stream" | "receipt" | "loop";
 
 /** Stroke paths on a 24x24 grid, keyed by the name a content file gives. */
 const GLYPHS: Record<Glyph, string> = {
@@ -26,11 +26,9 @@ const GLYPHS: Record<Glyph, string> = {
 	gauge: "M4 15a8 8 0 0 1 16 0M12 15l4-5",
 	// Stacked lines of unequal length: the event stream, tailing.
 	stream: "M4 7h16M4 12h11M4 17h6",
-	// A till receipt: the append-only audit trail.
+	// A till receipt: the final record returned to Git.
 	receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2ZM9 8h6M9 12h6",
-	// A balance: the judge weighing a finished run.
-	scale: "M12 4v16M8 20h8M4 7h16M6 7l-2 5h4ZM18 7l-2 5h4Z",
-	// An arrow that returns on itself: the run that dispatches its own retry.
+	// An arrow that returns on itself: intervention and recovery.
 	loop: "M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4",
 };
 

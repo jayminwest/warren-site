@@ -1,5 +1,5 @@
 ---
-tagline: "The self-hosted control plane for coding agents."
+tagline: "Infrastructure for coding-agent workloads."
 ---
 
-Warren dispatches coding agents at your GitHub repositories and controls what happens around the run: sandbox, spend cap, audit log, verdict. It is part of the os-eco tool set.
+Warren runs agent harnesses as isolated, observable workloads on infrastructure you control. It manages the run from workspace creation through Git delivery.

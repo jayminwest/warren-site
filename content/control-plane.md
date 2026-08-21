@@ -1,6 +1,8 @@
 ---
-eyebrow: "Control plane"
-heading: "Dispatch. Sandbox. Cap. Steer. Audit. Judge."
+eyebrow: "Managed lifecycle"
+heading: "Dispatch. Isolate. Observe. Limit. Intervene. Deliver."
 ---
 
-The control plane is what happens around the run, not inside it. Each verb below ships today.
+A harness writes the code. Warren manages the infrastructure around it through one run model and one API.
+
+Any harness with a Warren runtime adapter can use that model. The current distribution includes Pi and Claude Code adapters.

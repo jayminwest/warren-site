@@ -1,13 +1,13 @@
 ---
 eyebrow: "Self-host"
-heading: "One container. Your box."
+heading: "Your compute. Your credentials. Your run history."
 cta:
   label: "Read the Kubernetes runbook"
   href: "/docs/self-host/kubernetes/"
 ---
 
-Clone the repository, fill in a `.env` file, and run `docker compose up -d`. Two secrets: your Anthropic key and a GitHub token. SQLite by default, Postgres when you want it.
+Run Warren on one box, with sibling Docker containers, or on Kubernetes. Set `WARREN_RUNTIME` to select the execution backend. SQLite is the default store, and Postgres supports the cluster path.
 
-A bearer token guards every route. TLS stays at your edge. When one box is no longer enough, set `WARREN_RUNTIME=k8s` and each run becomes a Kubernetes pod.
+One bearer token guards the deployment today. One operator can run it alone, or a trusted team can share the same trust boundary. Named users, RBAC, and per-user attribution are not in the current release.
 
-Warren carries the MIT license. Read the code, fork it, run it.
+Warren carries the MIT license. Read the code, fork it, and run it.

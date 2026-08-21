@@ -1,10 +1,8 @@
 ---
-eyebrow: "System of record"
+eyebrow: "Durable evidence"
 heading: "Conversations evaporate. Runs leave a record."
 ---
 
-Every run leaves an episode: trajectory, outcome, gate results, judge verdict. A chat leaves nothing.
+Warren persists the run events, outcome, cost, and Git delivery facts. You can inspect what happened after the terminal closes.
 
-The audit log is append-only. The judge never shows an agent its verdict, so the thing the metric measures cannot game the metric.
-
-Orchestration is a commodity. A year of run telemetry about your codebase is not.
+Optional extensions can build on that record. The audit-log extension exports an append-only trail. The judge extension adds an independent verdict.

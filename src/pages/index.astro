@@ -22,25 +22,33 @@ import {
 	Content as ControlPlaneBody,
 	frontmatter as controlPlaneMeta,
 } from "../../content/control-plane.md";
-import { Content as AuditBody, frontmatter as auditMeta } from "../../content/features/audit.md";
-import { Content as CapBody, frontmatter as capMeta } from "../../content/features/cap.md";
+import {
+	Content as DeliverBody,
+	frontmatter as deliverMeta,
+} from "../../content/features/deliver.md";
 import {
 	Content as DispatchBody,
 	frontmatter as dispatchMeta,
 } from "../../content/features/dispatch.md";
-import { Content as JudgeBody, frontmatter as judgeMeta } from "../../content/features/judge.md";
 import {
-	Content as SandboxBody,
-	frontmatter as sandboxMeta,
-} from "../../content/features/sandbox.md";
-import { Content as SteerBody, frontmatter as steerMeta } from "../../content/features/steer.md";
+	Content as InterveneBody,
+	frontmatter as interveneMeta,
+} from "../../content/features/intervene.md";
+import { Content as IsolateBody, frontmatter as isolateMeta } from "../../content/features/isolate.md";
+import { Content as LimitBody, frontmatter as limitMeta } from "../../content/features/limit.md";
+import { Content as ObserveBody, frontmatter as observeMeta } from "../../content/features/observe.md";
 import { Content as HeroBody, frontmatter as heroMeta } from "../../content/hero.md";
 import {
 	Content as HowItWorksBody,
 	frontmatter as howItWorksMeta,
 } from "../../content/how-it-works.md";
+import {
+	Content as OptionalExtensionsBody,
+	frontmatter as optionalExtensionsMeta,
+} from "../../content/optional-extensions.md";
 import { Content as RecordBody, frontmatter as recordMeta } from "../../content/record.md";
 import { Content as SelfHostBody, frontmatter as selfHostMeta } from "../../content/self-host.md";
+import { Content as WorkloadBody, frontmatter as workloadMeta } from "../../content/workload.md";
 import BaseLayout from "../components/BaseLayout.astro";
 import FeatureCard from "../components/FeatureCard.astro";
 import GitHubMark from "../components/GitHubMark.astro";
@@ -79,20 +87,22 @@ const hero = heroMeta as {
 	primaryCta: Cta;
 	secondaryCta: Cta;
 };
+const workload = workloadMeta as { eyebrow: string; heading: string };
 const howItWorks = howItWorksMeta as { eyebrow: string; heading: string; steps: Step[] };
 const record = recordMeta as { eyebrow: string; heading: string };
 const controlPlane = controlPlaneMeta as { eyebrow: string; heading: string };
 const selfHost = selfHostMeta as { eyebrow: string; heading: string; cta: Cta };
+const optionalExtensions = optionalExtensionsMeta as { eyebrow: string; heading: string; cta: Cta };
 const closing = closingMeta as { heading: string; cta: Cta };
 
-/** The control-plane verbs, in the order `order` gives them in their frontmatter. */
+/** The managed-lifecycle verbs, in the order `order` gives them in their frontmatter. */
 const features = [
 	{ meta: dispatchMeta, Body: DispatchBody },
-	{ meta: sandboxMeta, Body: SandboxBody },
-	{ meta: capMeta, Body: CapBody },
-	{ meta: steerMeta, Body: SteerBody },
-	{ meta: auditMeta, Body: AuditBody },
-	{ meta: judgeMeta, Body: JudgeBody },
+	{ meta: isolateMeta, Body: IsolateBody },
+	{ meta: observeMeta, Body: ObserveBody },
+	{ meta: limitMeta, Body: LimitBody },
+	{ meta: interveneMeta, Body: InterveneBody },
+	{ meta: deliverMeta, Body: DeliverBody },
 ]
 	.map((entry) => ({
 		...entry,
@@ -100,7 +110,7 @@ const features = [
 			order: number;
 			eyebrow: string;
 			title: string;
-			glyph: "send" | "shield" | "gauge" | "stream" | "receipt" | "scale";
+			glyph: "send" | "shield" | "gauge" | "stream" | "receipt" | "loop";
 		},
 	}))
 	.sort((a, b) => a.meta.order - b.meta.order);
@@ -175,10 +185,10 @@ const runEvents = [
 		</dl>
 	</section>
 
-	<section class="shell block" aria-labelledby="record">
-		<p class="eyebrow">{record.eyebrow}</p>
-		<h2 id="record">{record.heading}</h2>
-		<div class="prose"><RecordBody /></div>
+	<section class="shell block" aria-labelledby="workload">
+		<p class="eyebrow">{workload.eyebrow}</p>
+		<h2 id="workload">{workload.heading}</h2>
+		<div class="prose"><WorkloadBody /></div>
 	</section>
 
 	<section class="shell steps" aria-labelledby="how-it-works">
@@ -208,6 +218,21 @@ const runEvents = [
 		<h2 id="self-host">{selfHost.heading}</h2>
 		<div class="prose"><SelfHostBody /></div>
 		<a class="cta secondary" href={selfHost.cta.href}>{selfHost.cta.label}</a>
+	</section>
+
+	<section class="shell block" aria-labelledby="record">
+		<p class="eyebrow">{record.eyebrow}</p>
+		<h2 id="record">{record.heading}</h2>
+		<div class="prose"><RecordBody /></div>
+	</section>
+
+	<section class="shell block" aria-labelledby="optional-extensions">
+		<p class="eyebrow">{optionalExtensions.eyebrow}</p>
+		<h2 id="optional-extensions">{optionalExtensions.heading}</h2>
+		<div class="prose"><OptionalExtensionsBody /></div>
+		<a class="cta secondary" href={optionalExtensions.cta.href}>
+			{optionalExtensions.cta.label}
+		</a>
 	</section>
 
 	<section class="shell closing" aria-labelledby="closing">

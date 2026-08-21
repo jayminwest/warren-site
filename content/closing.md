@@ -1,8 +1,8 @@
 ---
-heading: "Warren runs warren"
+heading: "Warren runs Warren"
 cta:
   label: "Star warren on GitHub"
   href: "https://github.com/jayminwest/warren"
 ---
 
-Warren dispatches agents at its own repository, judges their pull requests, and publishes the log. Watch real runs at app.warren.run, with no login, then run your own.
+Warren dispatches workloads against its own repository and publishes the run history. Watch real runs at app.warren.run, with no login, then run your own.

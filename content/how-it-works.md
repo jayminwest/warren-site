@@ -1,19 +1,19 @@
 ---
 eyebrow: "How it works"
-heading: "Warren operates the loop"
+heading: "Warren operates the run"
 steps:
-  - stage: "Intake"
-    title: "Queue the work"
-    body: "Dispatch by hand, or do not: cron triggers, alerts, and the CI fixer start runs with no prompt from you."
-  - stage: "Admission"
-    title: "Warren admits what fits"
-    body: "Admission control holds queue depth and per-project concurrency. Duplicate dispatches fold onto one run."
+  - stage: "Workspace"
+    title: "Prepare the work"
+    body: "Warren refreshes the repository, creates a run branch, and materializes a disposable workspace."
   - stage: "Runtime"
-    title: "Warren contains the run"
-    body: "Every run gets a fresh sandbox and a live spend cap. A watchdog reaps hung runs. You steer only to correct course."
-  - stage: "Record"
-    title: "Warren keeps the record"
-    body: "Warren pushes the branch, opens the pull request, logs the run, and judges it. A run that dies mid-work still leaves its work behind."
+    title: "Start the workload"
+    body: "Warren starts the selected harness in a sandbox on one box, in Docker, or in a Kubernetes pod."
+  - stage: "Control"
+    title: "Observe and intervene"
+    body: "Live events, spend limits, and cancellation keep the run visible. Runtimes that support steering also accept corrections."
+  - stage: "Delivery"
+    title: "Recover and deliver"
+    body: "Warren preserves recoverable work, pushes the branch, and can open a pull request when the forge supports it."
 ---
 
-Your judgment belongs in two artifacts: the issue before, the PR after. Warren operates everything in between.
+You define the task and review the change. Warren operates the run between those decisions.

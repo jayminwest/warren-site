@@ -139,7 +139,7 @@ export default defineConfig({
 			title: "Warren",
 			head: analyticsHead,
 			description:
-				"Self-hosted control plane for coding agents. Sandboxed runs, spend caps, an audit log, and judge verdicts. Your infra, your keys.",
+				"Coding agents are tools. Warren turns them into infrastructure. Run agent harnesses as isolated, observable workloads on infrastructure you control.",
 			/**
 			 * No `logo` here on purpose. That option takes an image path, and
 			 * the lockup is now an inline SVG so it can be transparent and
@@ -197,7 +197,7 @@ export default defineConfig({
 				starlightLlmsTxt({
 					projectName: "Warren",
 					description:
-						"Warren is the self-hosted control plane for coding agents. It clones a GitHub repository, runs a coding agent inside a sandbox, streams the run to an HTTP API and UI, and pushes the resulting branch as a pull request.",
+						"Coding agents are tools. Warren turns them into infrastructure. It runs harnesses as isolated, observable workloads and manages each run from workspace creation through Git delivery.",
 					details: [
 						"Notes for models reading these docs:",
 						"",
