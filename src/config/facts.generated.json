@@ -1,9 +1,9 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.17.0",
-	"version": "0.17.0",
+	"ref": "v0.18.0",
+	"version": "0.18.0",
 	"license": "MIT",
-	"httpPathCount": 42,
+	"httpPathCount": 43,
 	"cliCommandCount": 15,
 	"cliCommands": [
 		"add-project",
