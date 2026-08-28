@@ -1,9 +1,9 @@
 {
 	"_generated": "Written by `bun run sync:upstream` from jayminwest/warren at the pinned ref. Do not edit — every value is extracted mechanically from an upstream artifact.",
-	"ref": "v0.18.0",
-	"version": "0.18.0",
+	"ref": "v0.19.0",
+	"version": "0.19.0",
 	"license": "MIT",
-	"httpPathCount": 43,
+	"httpPathCount": 49,
 	"cliCommandCount": 15,
 	"cliCommands": [
 		"add-project",
@@ -44,8 +44,6 @@
 		"WARREN_BIND_SOCKET",
 		"WARREN_BOT_EMAIL",
 		"WARREN_BOT_NAME",
-		"WARREN_BURROW_ARGS",
-		"WARREN_BURROW_NO_AUTH",
 		"WARREN_CN_BINARY",
 		"WARREN_DATA_DIR",
 		"WARREN_DB_PATH",
@@ -63,6 +61,8 @@
 		"WARREN_HOST_PORT",
 		"WARREN_HOST_PREVIEW_PORT",
 		"WARREN_IMAGE_TAG",
+		"WARREN_JUDGE_BASE_URL",
+		"WARREN_JUDGE_EXPORT_TOKEN",
 		"WARREN_K8S_AGENT_IMAGE",
 		"WARREN_K8S_CALLBACK_NAMESPACE",
 		"WARREN_K8S_CALLBACK_PORT",
@@ -105,7 +105,6 @@
 		"WARREN_UI_DIST_DIR",
 		"WARREN_WATCHDOG_DISABLED",
 		"WARREN_WATCHDOG_TICK_MS",
-		"WARREN_WORKER_PROBE_TIMEOUT_MS",
 		"WARREN_WORKSPACE_GC_DISABLED",
 		"WARREN_WORKSPACE_GC_TICK_MS",
 		"WARREN_WORKSPACE_GC_TTL"
