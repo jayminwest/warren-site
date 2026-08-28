@@ -19,7 +19,7 @@ Six surfaces derive from warren:
 | `/docs/reference/cli` | a static parse of `src/cli/main.ts` |
 | Narrative docs | the files listed in `UPSTREAM_DOCS` |
 | `/changelog` | `CHANGELOG.md` |
-| `src/styles/warren-theme.css` | the token blocks in `src/ui/src/index.css` |
+| `src/styles/warren-theme.css` | the `:root` token blocks in `src/ui/src/tokens.css` |
 
 Marketing copy lives in `content/` and belongs to this repo alone.
 

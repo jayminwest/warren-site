@@ -31,13 +31,14 @@
  * THEME KEYING. Starlight keys dark off bare `:root` and light off
  * `:root[data-theme='light']` (see `@astrojs/starlight/style/props.css`),
  * relying on its inline, pre-paint ThemeProvider script to always stamp a
- * concrete `data-theme="light"|"dark"` on <html>. Warren's vendored tokens
- * key the opposite way (light on bare `:root`, dark on
- * `:root[data-theme="dark"]`). Rather than re-key the vendored copy, this
- * file declares mode-varying values under BOTH explicit attribute
- * selectors, so the two conventions can never disagree. The one visible
- * consequence: with JavaScript disabled the page renders LIGHT (warren's
- * bare-`:root` default) where stock Starlight would render dark.
+ * concrete `data-theme="light"|"dark"` on <html>. Since warren v0.19.0
+ * the vendored tokens key the SAME way (dark on bare `:root`, light on
+ * `:root[data-theme="light"]`, plus warren's own `prefers-color-scheme`
+ * fallback for pages nothing stamps). This file still declares every
+ * mode-varying value under BOTH explicit attribute selectors, so a future
+ * upstream re-keying (v0.18 keyed the opposite way) cannot make the two
+ * conventions disagree. With JavaScript disabled the page follows the OS
+ * preference via warren's fallback.
  */
 
 /*
@@ -256,35 +257,17 @@
 
 /*
  * The landing page and /changelog live outside Starlight's chrome and
- * ship no JavaScript, so nothing stamps `data-theme` on them and the
- * vendored bare-`:root` (light) set applies. Follow the OS preference
- * there instead. Only the tokens those two pages actually consume are
- * restated — this is a fallback, not a second copy of the dark theme; the
- * authoritative dark set stays in `warren-theme.css`.
+ * ship no JavaScript, so nothing stamps `data-theme` on them. Since
+ * warren v0.19.0 the vendored tokens handle that case themselves — dark
+ * on bare `:root`, light under `@media (prefers-color-scheme: light)` —
+ * so warren color tokens are NOT restated here (a hand-restated copy
+ * drifted from the real palette once already). Only what warren does not
+ * provide is declared: `color-scheme`, and the dark values of the
+ * site-derived `--fm-*` steps declared above for themed pages.
  */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme]) {
 		color-scheme: dark;
-		--color-bg: oklch(14% 0.008 264);
-		--color-fg: oklch(96% 0.005 264);
-		--color-muted: oklch(20% 0.012 264);
-		--color-muted-foreground: oklch(67% 0.012 264);
-		--color-border: oklch(28% 0.012 264);
-		--color-card: oklch(17% 0.01 264);
-		--color-ring: oklch(60% 0.015 264);
-		--color-primary: oklch(72% 0.11 152);
-		--color-primary-foreground: oklch(15% 0.01 152);
-		--color-success: oklch(72% 0.13 150);
-		/*
-		 * The status tokens the run panel draws with — status color reads as
-		 * colored TEXT on a hairline pill in the field-manual treatment, so
-		 * only the base tokens are needed here, no `-foreground` pairs.
-		 */
-		--color-info: oklch(72% 0.14 240);
-		--color-warning: oklch(80% 0.15 75);
-		--color-neutral: oklch(70% 0.02 264);
-
-		/* Field-manual derived steps (declared above for themed pages). */
 		--fm-faint: oklch(50% 0.014 264);
 		--fm-line-strong: oklch(30% 0.012 264);
 		--fm-accent-dim: oklch(38% 0.06 152);

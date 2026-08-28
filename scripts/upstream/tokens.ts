@@ -11,21 +11,31 @@
  * network, no checkout — so the whole module is unit-testable. The impure
  * shell lives in `scripts/sync-upstream.ts`.
  *
- * Two blocks are lifted out of warren's `src/ui/src/tokens.css` (split out of
- * `index.css` upstream in warren-ac7b, at v0.16.0):
+ * WHY STRUCTURAL, NOT LITERAL. The first version of this module looked for
+ * two exact opening lines (`@theme {` and `:root[data-theme="dark"] {`) and
+ * threw when either was missing. Warren restructured its stylesheet at
+ * v0.19.0 (dark-first `:root`, light overrides, a compat layer, new `@theme`
+ * wiring) and the sync broke — the third such breakage. This version keys on
+ * STRUCTURE instead: it walks every top-level construct in the stylesheet
+ * and vendors the ones that carry tokens, in upstream order:
  *
- * 1. `@theme { … }` — Tailwind's token block, rewritten to `:root { … }`.
- *    Tailwind emits an `@theme` block's contents as `:root` custom
- *    properties, so the two are equivalent on a site with no Tailwind.
- * 2. `:root[data-theme="dark"] { … }` — the dark overrides, together with the
- *    comment block directly above them, which explains the keying.
+ *   - any rule whose selector mentions `:root` — copied verbatim, along with
+ *     the comment block sitting directly above it;
+ *   - any `@media` block that contains a `:root` rule (theme fallbacks) —
+ *     copied verbatim;
+ *   - a static `@theme { … }` block — copied with its wrapper rewritten to
+ *     `:root { … }`. Tailwind emits an `@theme` block's contents as `:root`
+ *     custom properties, so the two are equivalent on a site with no
+ *     Tailwind.
  *
- * Deliberately NOT copied, and asserted by the tests: upstream's
- * `@import "tailwindcss"` line, its `@font-face` rules, its
- * `@custom-variant dark` declaration, and its base-element rules
- * (`html, body`, `*`, the tabular-numerals rule). Upstream keeps those in
- * `index.css`, outside the token file, and the extractor skips them even if
- * they move back in. Those are app concerns; the site declares its own.
+ * Deliberately SKIPPED, wherever they sit: `@theme inline` (Tailwind wiring
+ * whose declarations are self-referential without Tailwind), `@import`,
+ * `@font-face`, `@custom-variant`, and every base-element rule (`html, body`,
+ * `*`, …). Those are app concerns; the site declares its own.
+ *
+ * The module still fails loudly rather than emitting garbage: it throws when
+ * the stylesheet yields no `:root` token block at all, and when a block is
+ * never closed — a silently-empty token file is far worse than a failed sync.
  */
 
 /** Upstream path of the stylesheet the tokens are lifted from. */
@@ -33,15 +43,6 @@ export const TOKENS_SOURCE = "src/ui/src/tokens.css";
 
 /** Repo-relative path of the file this module generates. */
 export const TOKENS_OUT_PATH = "src/styles/warren-theme.css";
-
-/** The Tailwind token block's opening line, at column 0 upstream. */
-const THEME_OPENER = "@theme {";
-
-/** The dark-override rule's opening line, at column 0 upstream. */
-const DARK_OPENER = ':root[data-theme="dark"] {';
-
-/** What `THEME_OPENER` becomes on a site with no Tailwind. */
-const THEME_REPLACEMENT = ":root {";
 
 export type ThemeCssOptions = {
 	/** Pinned upstream ref, e.g. `v0.11.0`. Named in the header comment. */
@@ -52,12 +53,16 @@ export type ThemeCssOptions = {
 	readonly sourcePath?: string;
 };
 
-/** One extracted CSS block: its text, and where it started upstream. */
-export type ExtractedBlock = {
-	/** The block's lines, joined, with no trailing newline. */
+/** One top-level CSS construct: a rule/at-rule block or a lone statement. */
+export type TopLevelConstruct = {
+	/** The construct's lines, joined, with no trailing newline. */
 	readonly text: string;
-	/** 1-based line number of the block's opening line upstream. */
+	/** 1-based line number of the construct's first line upstream. */
 	readonly startLine: number;
+	/** Everything before the first `{`, comment-stripped, whitespace-normalized. */
+	readonly prelude: string;
+	/** `statement` for brace-less at-rules like `@import "x";`. */
+	readonly kind: "block" | "statement";
 };
 
 /**
@@ -85,9 +90,8 @@ function stripComments(line: string, state: { inComment: boolean }): string {
 	return out;
 }
 
-/** Count `{` minus `}` on a line, ignoring anything inside a comment. */
-function braceDelta(line: string, state: { inComment: boolean }): number {
-	const code = stripComments(line, state);
+/** Count `{` minus `}` in already-comment-stripped text. */
+function braceDelta(code: string): number {
 	let delta = 0;
 	for (const char of code) {
 		if (char === "{") delta++;
@@ -97,43 +101,107 @@ function braceDelta(line: string, state: { inComment: boolean }): number {
 }
 
 /**
- * Extract the brace-balanced block whose opening line is exactly `opener`.
+ * Split a stylesheet into its top-level constructs, in order.
  *
- * The opener must sit at column 0, which is how upstream writes both blocks.
- * Throws rather than returning a partial block: a missed opener means the
- * upstream stylesheet has been restructured, and a silently-empty token file
- * is far worse than a failed sync.
+ * Comment-only and blank lines between constructs belong to no construct;
+ * {@link precedingComment} recovers a construct's doc comment when the caller
+ * wants it. Throws when a block is still open at end of input, so a truncated
+ * upstream file can never round-trip into a truncated token file.
  */
-export function extractBlock(css: string, opener: string): ExtractedBlock {
-	const lines = css.split("\n");
-	const start = lines.indexOf(opener);
-	if (start === -1) {
-		throw new Error(
-			`sync:upstream: no line \`${opener}\` in ${TOKENS_SOURCE}. warren's stylesheet has ` +
-				"been restructured; update scripts/upstream/tokens.ts.",
-		);
+/** Mutable scan state for the construct currently being read. */
+type Scan = { start: number; prelude: string; sawBrace: boolean };
+
+/**
+ * Fold one comment-stripped line into the prelude being accumulated.
+ * Reports when the line opened the construct's block, or closed a
+ * brace-less statement, so the caller can finish the construct.
+ */
+function extendPrelude(scan: Scan, code: string): "opened-block" | "ended-statement" | "continue" {
+	const bracePos = code.indexOf("{");
+	const preludePart = bracePos === -1 ? code : code.slice(0, bracePos);
+	scan.prelude = `${scan.prelude} ${preludePart}`.replace(/\s+/g, " ").trim();
+	if (bracePos !== -1) {
+		scan.sawBrace = true;
+		return "opened-block";
 	}
+	return code.includes(";") ? "ended-statement" : "continue";
+}
+
+function finishConstruct(
+	lines: readonly string[],
+	scan: Scan,
+	endIndex: number,
+	kind: TopLevelConstruct["kind"],
+): TopLevelConstruct {
+	return {
+		text: lines.slice(scan.start, endIndex + 1).join("\n"),
+		startLine: scan.start + 1,
+		prelude: kind === "statement" ? scan.prelude.replace(/;.*$/, "").trim() : scan.prelude,
+		kind,
+	};
+}
+
+export function parseTopLevelConstructs(css: string): TopLevelConstruct[] {
+	const lines = css.split("\n");
 	const state = { inComment: false };
+	const out: TopLevelConstruct[] = [];
+	let scan: Scan | undefined;
 	let depth = 0;
-	for (let index = start; index < lines.length; index++) {
-		depth += braceDelta(lines[index] ?? "", state);
-		if (depth === 0) {
-			return { text: lines.slice(start, index + 1).join("\n"), startLine: start + 1 };
+	for (let index = 0; index < lines.length; index++) {
+		const code = stripComments(lines[index] ?? "", state);
+		if (scan === undefined) {
+			if (code.trim() === "") continue;
+			scan = { start: index, prelude: "", sawBrace: false };
+		}
+		if (!scan.sawBrace && extendPrelude(scan, code) === "ended-statement") {
+			out.push(finishConstruct(lines, scan, index, "statement"));
+			scan = undefined;
+			continue;
+		}
+		depth += braceDelta(code);
+		if (scan.sawBrace && depth === 0) {
+			out.push(finishConstruct(lines, scan, index, "block"));
+			scan = undefined;
 		}
 	}
-	throw new Error(
-		`sync:upstream: the \`${opener}\` block in ${TOKENS_SOURCE} is never closed. ` +
-			"Refusing to emit a truncated token file.",
-	);
+	if (scan !== undefined) {
+		throw new Error(
+			`sync:upstream: a block opening near line ${scan.start + 1} of ${TOKENS_SOURCE} is ` +
+				"never closed. Refusing to emit a truncated token file.",
+		);
+	}
+	return out;
+}
+
+/** How a construct is vendored: copied, wrapper-rewritten, or left behind. */
+export type VendorAction = "verbatim" | "rewrite-theme" | "skip";
+
+/**
+ * Decide what to do with one top-level construct.
+ *
+ * The rules are structural so an upstream reshuffle — new blocks, reordered
+ * blocks, inverted theme keying — syncs without edits here. Only a stylesheet
+ * with NO `:root` tokens at all fails the sync (see {@link renderThemeCss}).
+ */
+export function classify(construct: TopLevelConstruct): VendorAction {
+	if (construct.kind === "statement") return "skip";
+	const prelude = construct.prelude;
+	if (prelude.startsWith("@theme inline")) return "skip";
+	if (prelude.startsWith("@theme")) return "rewrite-theme";
+	if (prelude.startsWith("@media")) {
+		return construct.text.includes(":root") ? "verbatim" : "skip";
+	}
+	if (prelude.startsWith("@")) return "skip";
+	return prelude.includes(":root") ? "verbatim" : "skip";
 }
 
 /**
  * The comment block sitting directly above `startLine`, if there is one.
  *
- * Upstream keys its dark tokens with a paragraph explaining why the `@media`
- * duplicate went away; that reasoning belongs with the block it describes.
- * Returns `""` when the line above is blank or is not the end of a comment,
- * so a future upstream that drops the comment still syncs cleanly.
+ * Upstream keys its theme blocks with paragraphs explaining the keying; that
+ * reasoning belongs with the block it describes. Returns `""` when the line
+ * above is blank or is not the end of a comment, so a block with no doc
+ * comment still syncs cleanly.
  */
 export function precedingComment(css: string, startLine: number): string {
 	const lines = css.split("\n");
@@ -148,27 +216,41 @@ export function precedingComment(css: string, startLine: number): string {
 }
 
 /**
- * The file header.
+ * Rewrite a `@theme` block's wrapper to `:root`.
  *
- * The wording is the header the file has carried since it was vendored by
- * hand, preserved verbatim so this generator's first output is byte-identical
- * to the committed file. Only the facts inside it move: the ref, the upstream
- * path, and the line the `@theme` block starts on. That last one is derived
- * rather than frozen for the same reason the tokens are — a hard-coded line
- * number becomes a lie the moment upstream inserts a rule above the block.
+ * Only the text before the opening brace changes. Every declaration inside
+ * stays byte-identical to upstream, which is the property the header promises
+ * and the drift gate enforces.
+ */
+export function rewriteThemeWrapper(block: string): string {
+	const brace = block.indexOf("{");
+	if (brace === -1 || !block.slice(0, brace).trimStart().startsWith("@theme")) {
+		throw new Error("sync:upstream: expected a `@theme` block to rewrite to `:root`.");
+	}
+	return `:root ${block.slice(brace)}`;
+}
+
+/**
+ * The file header.
  *
  * Line 1 is a Biome directive, not prose: the declarations are upstream's and
  * must survive this repo's formatter unchanged.
  */
-export function renderHeader(options: ThemeCssOptions, themeStartLine: number): string {
+export function renderHeader(options: ThemeCssOptions, blockCount: number): string {
 	const source = options.sourcePath ?? TOKENS_SOURCE;
 	return `/* biome-ignore-all format: vendored — declarations must stay as upstream wrote them */
 /*
  * GENERATED — DO NOT HAND-EDIT. Run \`bun run sync:upstream\`.
  *
  * Source: ${options.repoLabel} \`${source}\` @ ref \`${options.ref}\`
- *         (the \`@theme { … }\` block starting at line ${themeStartLine}, plus the
- *         \`:root[data-theme="dark"]\` override block that follows it).
+ *         (${blockCount} token block(s), vendored structurally: every top-level
+ *         rule that puts custom properties on \`:root\`, every \`@media\` theme
+ *         fallback, and any static \`@theme { … }\` block rewritten to
+ *         \`:root { … }\` — Tailwind emits \`@theme\` contents as \`:root\`
+ *         custom properties, so the two are equivalent on a site with no
+ *         Tailwind. \`@theme inline\`, \`@import\`, \`@font-face\`,
+ *         \`@custom-variant\`, and base-element rules are upstream app
+ *         concerns and are never copied.)
  *
  * This file is the warren app's design-token set, derived so the
  * marketing/docs site and the product render the same colors, fonts,
@@ -180,47 +262,36 @@ export function renderHeader(options: ThemeCssOptions, themeStartLine: number): 
  * mapping, page styling) belongs in \`starlight-overrides.css\` and in
  * component \`<style>\` blocks.
  *
- * ONE mechanical transform is applied on copy, because this site has no
- * Tailwind: the wrapper \`@theme {\` becomes \`:root {\`. Tailwind's \`@theme\`
- * emits its contents as \`:root\` custom properties, so the two are
- * equivalent here; every declaration inside is byte-identical to upstream.
- * Upstream keeps its Tailwind import line, its \`@custom-variant dark\`
- * declaration, and its base-element rules in \`index.css\`, and none of that
- * is copied here. (Spelling that import out literally here would make knip
- * read it as a real dependency.)
- *
- * Theme keying (upstream semantics, preserved): light tokens live on bare
- * \`:root\`, dark tokens on \`:root[data-theme="dark"]\`.
+ * Theme keying is upstream's, preserved verbatim — consult the vendored
+ * comments below for which selector carries which mode at this ref.
  */`;
 }
 
 /**
- * Rewrite the extracted `@theme` block's wrapper to `:root`.
- *
- * Only the opening line changes. Every declaration inside stays byte-identical
- * to upstream, which is the property the header promises and the drift gate
- * enforces.
- */
-export function rewriteThemeWrapper(block: string): string {
-	if (!block.startsWith(THEME_OPENER)) {
-		throw new Error(`sync:upstream: expected the token block to open with \`${THEME_OPENER}\`.`);
-	}
-	return THEME_REPLACEMENT + block.slice(THEME_OPENER.length);
-}
-
-/**
  * The exact bytes `src/styles/warren-theme.css` should hold for a given
- * upstream `index.css`.
+ * upstream stylesheet.
  *
- * Header, the rewritten token block, then the dark overrides with the comment
- * that explains them — one blank line between each, trailing newline at the
- * end.
+ * Header, then every vendored block in upstream order, each with the comment
+ * that documents it — one blank line between sections, trailing newline at
+ * the end. Throws when the stylesheet yields no token block: a missed
+ * restructure must fail the sync, never publish an empty theme.
  */
 export function renderThemeCss(indexCss: string, options: ThemeCssOptions): string {
-	const theme = extractBlock(indexCss, THEME_OPENER);
-	const dark = extractBlock(indexCss, DARK_OPENER);
-	const comment = precedingComment(indexCss, dark.startLine);
-	const darkSection = comment === "" ? dark.text : `${comment}\n${dark.text}`;
-	const header = renderHeader(options, theme.startLine);
-	return `${header}\n\n${rewriteThemeWrapper(theme.text)}\n\n${darkSection}\n`;
+	const sections: string[] = [];
+	for (const construct of parseTopLevelConstructs(indexCss)) {
+		const action = classify(construct);
+		if (action === "skip") continue;
+		const text = action === "rewrite-theme" ? rewriteThemeWrapper(construct.text) : construct.text;
+		const comment = precedingComment(indexCss, construct.startLine);
+		sections.push(comment === "" ? text : `${comment}\n${text}`);
+	}
+	const hasTokens = sections.some((section) => /--[\w-]+\s*:/.test(section));
+	if (sections.length === 0 || !hasTokens) {
+		throw new Error(
+			`sync:upstream: no \`:root\` token block found in ${TOKENS_SOURCE}. warren's stylesheet ` +
+				"has been restructured beyond recognition; update scripts/upstream/tokens.ts.",
+		);
+	}
+	const header = renderHeader(options, sections.length);
+	return `${header}\n\n${sections.join("\n\n")}\n`;
 }
