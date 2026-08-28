@@ -5,6 +5,16 @@
 	"framework": "astro",
 	"cleanUrls": true,
 	"trailingSlash": true,
+	"rewrites": [
+		{
+			"source": "/install",
+			"destination": "https://raw.githubusercontent.com/jayminwest/warren/main/scripts/install.sh"
+		},
+		{
+			"source": "/install/",
+			"destination": "https://raw.githubusercontent.com/jayminwest/warren/main/scripts/install.sh"
+		}
+	],
 	"headers": [
 		{
 			"source": "/_astro/(.*)",
